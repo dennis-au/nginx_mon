@@ -37,6 +37,7 @@ python3 -m venv .build-venv
 install -Dpm 0755 dist/nginx-mon %{buildroot}%{_bindir}/nginx-mon
 install -Dpm 0644 packaging/nginx_mon.conf \
     %{buildroot}%{_datadir}/nginx-mon/nginx_mon.conf
+install -d %{buildroot}%{_mandir}/man1
 gzip -9c packaging/nginx-mon.1 > %{buildroot}%{_mandir}/man1/nginx-mon.1.gz
 
 %files
