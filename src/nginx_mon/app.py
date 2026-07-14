@@ -6,6 +6,7 @@ from typing import Iterable, List
 
 from textual.app import App, ComposeResult
 from textual.binding import Binding
+from textual.css.query import NoMatches
 from textual.screen import Screen
 from textual.widgets import DataTable, Footer, Header, Static
 
@@ -166,6 +167,12 @@ class MonitorApp(App[None]):
     def refresh_data(self) -> None:
         """Ingest newly completed requests and redraw the live summary table."""
 
+        try:
+            table = self.query_one("#traffic-table", DataTable)
+        except NoMatches:
+            # The detail screen replaces the main table until the user returns.
+            return
+
         for line in self.follower.poll():
             record = self.parser.parse_line(line)
             if record is None:
@@ -175,7 +182,6 @@ class MonitorApp(App[None]):
             self._parsed_request_count += 1
 
         summaries = self.store.summaries(self.now())
-        table = self.query_one("#traffic-table", DataTable)
         table.clear(columns=False)
         for summary in summaries:
             table.add_row(
