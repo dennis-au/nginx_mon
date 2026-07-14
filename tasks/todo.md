@@ -69,7 +69,8 @@
 - [x] Generate requests through the Nginx frontend with `curl` and ApacheBench.
 - [x] Verify live table rows show frontend URL and nonzero backend TX/RX.
 - [x] Open a row and verify all per-request details against the access log.
-- [x] Record the matching RPM artifacts: `/root/rpmbuild/RPMS/x86_64/nginx_mon-0.3.0-1.el9.x86_64.rpm` and `artifacts/nginx_mon-0.3.0-1.el9.x86_64.rpm`.
+- [x] Record the matching RPM and ELF artifacts: `/root/rpmbuild/RPMS/x86_64/nginx_mon-0.4.0-1.el9.x86_64.rpm`, `artifacts/nginx_mon-0.4.0-1.el9.x86_64.rpm`, and `artifacts/nginx-mon-0.4.0-el9-x86_64`.
+- [x] Validate the installed `0.4.0` binary's `p` pause/resume hotkey in a CentOS 9 pseudo-terminal.
 
 ## 6. Quality and Source Control
 
