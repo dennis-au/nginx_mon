@@ -1,5 +1,6 @@
 """Textual screens for the live Nginx traffic monitor."""
 
+from dataclasses import replace
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterable, List
@@ -11,6 +12,7 @@ from textual.screen import Screen
 from textual.widgets import DataTable, Footer, Header, Static
 
 from .models import FrontendSummary, RequestRecord
+from .network import NetworkManagerResolver
 from .parser import NginxJsonParser
 from .store import TrafficStore
 from .tailer import LogFollower
@@ -83,6 +85,7 @@ class RequestDetailScreen(Screen[None]):
             "Time",
             "Source",
             "Listen",
+            "Network",
             "TLS",
             "Method",
             "Request URI",
@@ -97,7 +100,8 @@ class RequestDetailScreen(Screen[None]):
             table.add_row(
                 request.timestamp.astimezone().strftime("%H:%M:%S"),
                 request.source_endpoint,
-                request.frontend_port,
+                request.listener_endpoint,
+                request.network_connection,
                 request.ssl_protocol or "Plain",
                 request.method,
                 request.uri,
@@ -149,6 +153,7 @@ class MonitorApp(App[None]):
         super().__init__()
         self.follower = LogFollower(log_file)
         self.parser = NginxJsonParser()
+        self.network_resolver = NetworkManagerResolver()
         self.store = TrafficStore(max_records=max_records)
         self.refresh_interval = refresh_interval
         self._parsed_request_count = 0
@@ -173,6 +178,7 @@ class MonitorApp(App[None]):
         table = self.query_one("#traffic-table", DataTable)
         table.add_columns(
             "Frontend URL",
+            "Network",
             "TLS",
             "Sources",
             "Backends",
@@ -200,6 +206,10 @@ class MonitorApp(App[None]):
             if record is None:
                 self._ignored_line_count += 1
                 continue
+            record = replace(
+                record,
+                network_connection=self.network_resolver.connection_for(record.listener_ip),
+            )
             self.store.add(record)
             self._parsed_request_count += 1
 
@@ -208,6 +218,7 @@ class MonitorApp(App[None]):
         for summary in summaries:
             table.add_row(
                 summary.frontend_url,
+                format_endpoints(summary.network_connections),
                 format_endpoints(summary.tls_protocols, empty="Plain"),
                 format_endpoints(summary.source_endpoints),
                 format_endpoints(summary.backend_endpoints),

@@ -30,8 +30,10 @@ class RequestRecord:
     upstream_address: str
     source_ip: str
     source_port: str
+    listener_ip: str
     frontend_port: str
     ssl_protocol: str
+    network_connection: str
     backend_ip: str
     backend_port: str
     backend_tx_bytes: int
@@ -48,6 +50,12 @@ class RequestRecord:
     def backend_endpoint(self) -> str:
         return format_endpoint(self.backend_ip, self.backend_port)
 
+    @property
+    def listener_endpoint(self) -> str:
+        if not self.listener_ip or self.listener_ip == "-":
+            return "port {}".format(self.frontend_port)
+        return format_endpoint(self.listener_ip, self.frontend_port)
+
 
 @dataclass(frozen=True)
 class FrontendSummary:
@@ -60,5 +68,6 @@ class FrontendSummary:
     backend_tx_rate: float
     backend_rx_rate: float
     source_endpoints: Tuple[str, ...]
+    network_connections: Tuple[str, ...]
     backend_endpoints: Tuple[str, ...]
     tls_protocols: Tuple[str, ...]

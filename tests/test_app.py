@@ -21,8 +21,10 @@ def test_monitor_displays_frontend_traffic_and_opens_request_detail():
                 upstream_address="10.0.0.10:8080",
                 source_ip="203.0.113.42",
                 source_port="53214",
+                listener_ip="192.0.2.20",
                 frontend_port="443",
                 ssl_protocol="TLSv1.3",
+                network_connection="ens18",
                 backend_ip="10.0.0.10",
                 backend_port="8080",
                 backend_tx_bytes=120,
@@ -41,6 +43,7 @@ def test_monitor_displays_frontend_traffic_and_opens_request_detail():
             assert "Frontend URL" in labels
             assert "TLS" in labels
             assert "Sources" in labels
+            assert "Network" in labels
             assert "Backends" in labels
 
             await pilot.press("enter")
@@ -48,6 +51,7 @@ def test_monitor_displays_frontend_traffic_and_opens_request_detail():
             detail_table = app.query_one("#request-table", DataTable)
             assert detail_table.row_count == 1
             assert "Source" in [column.label.plain for column in detail_table.columns.values()]
+            assert "Network" in [column.label.plain for column in detail_table.columns.values()]
 
     asyncio.run(exercise_app())
 
@@ -66,8 +70,10 @@ def test_monitor_skips_table_refresh_while_detail_screen_is_active():
                 upstream_address="10.0.0.10:8080",
                 source_ip="203.0.113.42",
                 source_port="53214",
+                listener_ip="192.0.2.20",
                 frontend_port="443",
                 ssl_protocol="TLSv1.3",
+                network_connection="ens18",
                 backend_ip="10.0.0.10",
                 backend_port="8080",
                 backend_tx_bytes=120,

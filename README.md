@@ -11,7 +11,7 @@ The main table displays one live row per `scheme://host` frontend URL:
 
 - request count in the current 60-second rolling window;
 - backend TX/s and RX/s, plus totals for that same window;
-- TLS state, source endpoints, and selected backend endpoints;
+- TLS state, source endpoints, NetworkManager connections, and selected backend endpoints;
 - a bounded recent-request history for the detail screen.
 
 The monitor maps Nginx variables as follows:
@@ -24,6 +24,7 @@ The monitor maps Nginx variables as follows:
 | Client response bytes | `$bytes_sent` | Response bytes sent by Nginx to the client. |
 | Latency | `$request_time` | Full request processing time in seconds. |
 | Source IP/port | `$remote_addr`, `$remote_port` | TCP peer address and port seen by Nginx. |
+| Network connection | `$server_addr`, NetworkManager | Active connection for the Nginx listener address, such as `ens18`. |
 | Frontend port | `$server_port` | Nginx listener port that accepted the request. |
 | TLS state | `$ssl_protocol` | TLS protocol for HTTPS, or `Plain` when it is empty. |
 
@@ -37,12 +38,17 @@ upstream endpoint as the selected backend IP:port.
 balancer, configure Nginx's real IP module before logging so this field records
 the original client address.
 
+`nginx-mon` resolves `$server_addr` with `ip` and `nmcli` every 30 seconds. It
+shows the active NetworkManager connection name in the main and detail tables;
+when NetworkManager does not own the interface, it falls back to the interface
+name. A missing local address or unavailable host tools is displayed as `-`.
+
 ## Installation
 
 Install the produced RPM on CentOS Stream 9 / RHEL 9 compatible x86_64 hosts:
 
 ```bash
-sudo dnf install ./nginx_mon-0.2.0-1.el9.x86_64.rpm
+sudo dnf install ./nginx_mon-0.3.0-1.el9.x86_64.rpm
 ```
 
 The installed files are:
@@ -123,20 +129,20 @@ Run this on CentOS Stream 9 after committing the source files:
 
 ```bash
 mkdir -p ~/rpmbuild/SOURCES
-git archive --format=tar.gz --prefix=nginx_mon-0.2.0/ \
-  -o ~/rpmbuild/SOURCES/nginx_mon-0.2.0.tar.gz HEAD
+git archive --format=tar.gz --prefix=nginx_mon-0.3.0/ \
+  -o ~/rpmbuild/SOURCES/nginx_mon-0.3.0.tar.gz HEAD
 rpmbuild -bb packaging/nginx_mon.spec
 ```
 
 The resulting artifact is under
-`~/rpmbuild/RPMS/x86_64/nginx_mon-0.2.0-1.el9.x86_64.rpm`.
+`~/rpmbuild/RPMS/x86_64/nginx_mon-0.3.0-1.el9.x86_64.rpm`.
 
 Verify and install it:
 
 ```bash
-rpm -qpl ~/rpmbuild/RPMS/x86_64/nginx_mon-0.2.0-1.el9.x86_64.rpm
-rpm -qpR ~/rpmbuild/RPMS/x86_64/nginx_mon-0.2.0-1.el9.x86_64.rpm
-sudo dnf install -y ~/rpmbuild/RPMS/x86_64/nginx_mon-0.2.0-1.el9.x86_64.rpm
+rpm -qpl ~/rpmbuild/RPMS/x86_64/nginx_mon-0.3.0-1.el9.x86_64.rpm
+rpm -qpR ~/rpmbuild/RPMS/x86_64/nginx_mon-0.3.0-1.el9.x86_64.rpm
+sudo dnf install -y ~/rpmbuild/RPMS/x86_64/nginx_mon-0.3.0-1.el9.x86_64.rpm
 /usr/bin/nginx-mon --help
 ```
 

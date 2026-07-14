@@ -1,4 +1,4 @@
-.TH NGINX-MON 1 "July 2026" "nginx-mon 0.2.0" "User Commands"
+.TH NGINX-MON 1 "July 2026" "nginx-mon 0.3.0" "User Commands"
 .SH NAME
 nginx-mon \- real-time Nginx reverse-proxy traffic monitor
 .SH SYNOPSIS
@@ -59,6 +59,13 @@ the Nginx listener port from
 .BR $server_port ,
 and TLS protocol from
 .BR $ssl_protocol .
+.PP
+The monitor uses the listener address from
+.BR $server_addr
+with NetworkManager to display the active network connection name, for example
+.IR ens18 .
+If NetworkManager does not own the interface, the interface name is used;
+unavailable network information is shown as a dash.
 An empty SSL protocol is displayed as Plain. When Nginx is behind another
 proxy, configure its real IP module to log the original client address.
 .SH FILES

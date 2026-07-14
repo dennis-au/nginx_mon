@@ -11,6 +11,7 @@ def test_parser_builds_a_request_record_from_nginx_json():
             "scheme": "https",
             "host": "api.example.test",
             "server_port": "443",
+            "server_addr": "192.0.2.20",
             "source_addr": "203.0.113.42",
             "source_port": "53214",
             "ssl_protocol": "TLSv1.3",
@@ -34,6 +35,7 @@ def test_parser_builds_a_request_record_from_nginx_json():
     assert record.frontend_url == "https://api.example.test:443"
     assert record.source_ip == "203.0.113.42"
     assert record.source_port == "53214"
+    assert record.listener_ip == "192.0.2.20"
     assert record.frontend_port == "443"
     assert record.ssl_protocol == "TLSv1.3"
     assert record.method == "GET"
@@ -72,6 +74,7 @@ def test_parser_treats_absent_upstream_values_as_zero():
     assert record.frontend_url == "http://example.test:80"
     assert record.source_ip == "-"
     assert record.source_port == "-"
+    assert record.listener_ip == "-"
     assert record.frontend_port == "80"
     assert record.ssl_protocol == ""
     assert record.backend_tx_bytes == 0

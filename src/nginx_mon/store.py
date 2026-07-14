@@ -50,6 +50,15 @@ class TrafficStore:
                     source_endpoints=tuple(
                         sorted({record.source_endpoint for record in records})
                     ),
+                    network_connections=tuple(
+                        sorted(
+                            {
+                                record.network_connection
+                                for record in records
+                                if record.network_connection and record.network_connection != "-"
+                            }
+                        )
+                    ),
                     backend_endpoints=tuple(
                         sorted({record.backend_endpoint for record in records})
                     ),
