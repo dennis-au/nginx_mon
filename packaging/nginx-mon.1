@@ -1,0 +1,60 @@
+.TH NGINX-MON 1 "July 2026" "nginx-mon 0.1.0" "User Commands"
+.SH NAME
+nginx-mon \- real-time Nginx reverse-proxy traffic monitor
+.SH SYNOPSIS
+.B nginx-mon
+.RI [ --log-file " PATH" ]
+.RI [ --refresh-interval " SECONDS" ]
+.RI [ --max-records " COUNT" ]
+.SH DESCRIPTION
+.B nginx-mon
+tails an Nginx JSON access log and displays upstream traffic grouped by
+frontend virtual host. It retains a bounded in-memory request history and does
+not modify Nginx logs.
+.SH OPTIONS
+.TP
+.B --log-file PATH
+JSON access log to follow. The default is
+.IR /var/log/nginx/nginx-mon-access.json.log .
+.TP
+.B --refresh-interval SECONDS
+Positive table refresh interval. The default is 1 second.
+.TP
+.B --max-records COUNT
+Positive number of recent requests retained for the detail view. The default
+is 5000.
+.TP
+.B --version
+Print the program version and exit.
+.SH KEYS
+.TP
+.B Up/Down
+Move through frontend rows or detail rows.
+.TP
+.B Enter
+Open the requests for the highlighted frontend.
+.TP
+.B Escape
+Return from request detail to the live frontend table.
+.TP
+.B r
+Refresh the log and table immediately.
+.TP
+.B q, Ctrl-C
+Quit the monitor.
+.SH NGINX LOG FORMAT
+Install the supplied
+.IR nginx_mon.conf
+under Nginx's included configuration directory. It writes JSON records using
+the upstream byte variables. Backend TX is
+.BR $upstream_bytes_sent ,
+the bytes Nginx sent to the upstream. Backend RX is
+.BR $upstream_bytes_received ,
+the bytes Nginx received from the upstream. A request with multiple upstream
+attempts can contain comma-separated values; nginx-mon sums them.
+.SH FILES
+.TP
+.I /usr/share/nginx-mon/nginx_mon.conf
+Sample Nginx log format and reverse-proxy server.
+.SH SEE ALSO
+.BR nginx (8)

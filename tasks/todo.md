@@ -34,20 +34,20 @@
 
 ## 3. Nginx Configuration and Documentation
 
-- [ ] Add an Nginx `log_format` snippet with JSON escaping and all required variables.
-- [ ] Add a sample reverse-proxy server block that writes the monitor log.
-- [ ] Add a minimal test backend setup and traffic-generation commands.
-- [ ] Document monitor installation, command-line options, and key bindings.
-- [ ] Explain the TX/RX variable mapping and 60-second rolling-rate behavior.
-- [ ] Add a `nginx-mon(1)` man page.
+- [x] Add an Nginx `log_format` snippet with JSON escaping and all required variables.
+- [x] Add a sample reverse-proxy server block that writes the monitor log.
+- [x] Add a minimal test backend setup and traffic-generation commands.
+- [x] Document monitor installation, command-line options, and key bindings.
+- [x] Explain the TX/RX variable mapping and 60-second rolling-rate behavior.
+- [x] Add a `nginx-mon(1)` man page.
 
 ## 4. Binary and RPM Packaging
 
-- [ ] Add a PyInstaller build command that produces one x86_64 executable.
-- [ ] Add `.spec` metadata, build prerequisites, and source-tarball instructions.
-- [ ] Install the binary in `/usr/bin/nginx-mon` from the RPM.
-- [ ] Install the Nginx sample under `/usr/share/nginx-mon/` from the RPM.
-- [ ] Install the compressed man page from the RPM.
+- [x] Add a PyInstaller build command that produces one x86_64 executable.
+- [x] Add `.spec` metadata, build prerequisites, and source-tarball instructions.
+- [x] Define installation of the binary in `/usr/bin/nginx-mon` from the RPM.
+- [x] Define installation of the Nginx sample under `/usr/share/nginx-mon/` from the RPM.
+- [x] Define installation of the compressed man page from the RPM.
 - [ ] Build the RPM on `192.168.0.101`.
 - [ ] Verify RPM contents and dependencies with `rpm -qpl` and `rpm -qpR`.
 - [ ] Install the RPM and confirm the binary runs without the project virtual environment.
