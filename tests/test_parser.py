@@ -1,7 +1,7 @@
 import json
 from datetime import datetime, timezone
 
-from nginx_mon.parser import NginxJsonParser, parse_nginx_bytes
+from nginx_mon.parser import NginxJsonParser, parse_nginx_bytes, parse_upstream_endpoint
 
 
 def test_parser_builds_a_request_record_from_nginx_json():
@@ -10,6 +10,10 @@ def test_parser_builds_a_request_record_from_nginx_json():
             "time": "2026-07-14T12:34:56+00:00",
             "scheme": "https",
             "host": "api.example.test",
+            "server_port": "443",
+            "source_addr": "203.0.113.42",
+            "source_port": "53214",
+            "ssl_protocol": "TLSv1.3",
             "request": "GET /v1/widgets?limit=10 HTTP/1.1",
             "method": "GET",
             "uri": "/v1/widgets?limit=10",
@@ -27,11 +31,17 @@ def test_parser_builds_a_request_record_from_nginx_json():
     record = NginxJsonParser().parse_line(line)
 
     assert record is not None
-    assert record.frontend_url == "https://api.example.test"
+    assert record.frontend_url == "https://api.example.test:443"
+    assert record.source_ip == "203.0.113.42"
+    assert record.source_port == "53214"
+    assert record.frontend_port == "443"
+    assert record.ssl_protocol == "TLSv1.3"
     assert record.method == "GET"
     assert record.uri == "/v1/widgets?limit=10"
     assert record.status == 200
     assert record.upstream_address == "10.0.0.10:8080"
+    assert record.backend_ip == "10.0.0.10"
+    assert record.backend_port == "8080"
     assert record.backend_tx_bytes == 192
     assert record.backend_rx_bytes == 4096
     assert record.request_length == 321
@@ -59,7 +69,11 @@ def test_parser_treats_absent_upstream_values_as_zero():
     record = NginxJsonParser().parse_line(line)
 
     assert record is not None
-    assert record.frontend_url == "http://example.test"
+    assert record.frontend_url == "http://example.test:80"
+    assert record.source_ip == "-"
+    assert record.source_port == "-"
+    assert record.frontend_port == "80"
+    assert record.ssl_protocol == ""
     assert record.backend_tx_bytes == 0
     assert record.backend_rx_bytes == 0
     assert record.latency_ms == 0
@@ -76,3 +90,11 @@ def test_parser_discards_malformed_or_incomplete_lines():
 def test_parse_nginx_bytes_sums_multiple_upstream_attempts():
     assert parse_nginx_bytes("1024, 512, -") == 1536
     assert parse_nginx_bytes(None) == 0
+
+
+def test_parse_upstream_endpoint_handles_ipv6_and_upstream_retry_lists():
+    assert parse_upstream_endpoint("10.0.0.10:8080, [2001:db8::10]:8443") == (
+        "2001:db8::10",
+        "8443",
+    )
+    assert parse_upstream_endpoint("unix:/run/backend.sock") == ("unix:/run/backend.sock", "")

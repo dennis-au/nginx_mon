@@ -47,6 +47,15 @@ class TrafficStore:
                     backend_rx_bytes=rx_bytes,
                     backend_tx_rate=tx_bytes / observed_seconds,
                     backend_rx_rate=rx_bytes / observed_seconds,
+                    source_endpoints=tuple(
+                        sorted({record.source_endpoint for record in records})
+                    ),
+                    backend_endpoints=tuple(
+                        sorted({record.backend_endpoint for record in records})
+                    ),
+                    tls_protocols=tuple(
+                        sorted({record.ssl_protocol for record in records if record.ssl_protocol})
+                    ),
                 )
             )
         return sorted(

@@ -19,6 +19,12 @@ def test_monitor_displays_frontend_traffic_and_opens_request_detail():
                 request="GET /v1/widgets HTTP/1.1",
                 status=200,
                 upstream_address="10.0.0.10:8080",
+                source_ip="203.0.113.42",
+                source_port="53214",
+                frontend_port="443",
+                ssl_protocol="TLSv1.3",
+                backend_ip="10.0.0.10",
+                backend_port="8080",
                 backend_tx_bytes=120,
                 backend_rx_bytes=4096,
                 request_length=200,
@@ -31,12 +37,17 @@ def test_monitor_displays_frontend_traffic_and_opens_request_detail():
             await pilot.pause()
             table = app.query_one("#traffic-table", DataTable)
             assert table.row_count == 1
-            assert "Frontend URL" in [column.label.plain for column in table.columns.values()]
+            labels = [column.label.plain for column in table.columns.values()]
+            assert "Frontend URL" in labels
+            assert "TLS" in labels
+            assert "Sources" in labels
+            assert "Backends" in labels
 
             await pilot.press("enter")
             await pilot.pause()
             detail_table = app.query_one("#request-table", DataTable)
             assert detail_table.row_count == 1
+            assert "Source" in [column.label.plain for column in detail_table.columns.values()]
 
     asyncio.run(exercise_app())
 
@@ -53,6 +64,12 @@ def test_monitor_skips_table_refresh_while_detail_screen_is_active():
                 request="GET /v1/widgets HTTP/1.1",
                 status=200,
                 upstream_address="10.0.0.10:8080",
+                source_ip="203.0.113.42",
+                source_port="53214",
+                frontend_port="443",
+                ssl_protocol="TLSv1.3",
+                backend_ip="10.0.0.10",
+                backend_port="8080",
                 backend_tx_bytes=120,
                 backend_rx_bytes=4096,
                 request_length=200,

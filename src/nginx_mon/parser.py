@@ -2,7 +2,7 @@
 
 import json
 from datetime import datetime, timezone
-from typing import Any, Mapping, Optional
+from typing import Any, Mapping, Optional, Tuple
 
 from .models import RequestRecord
 
@@ -43,6 +43,30 @@ def _integer(value: Any) -> int:
         return max(0, int(float(_text(value, "0"))))
     except ValueError:
         return 0
+
+
+def parse_upstream_endpoint(value: Any) -> Tuple[str, str]:
+    """Return the final upstream host and port from an Nginx address field."""
+
+    candidates = [
+        item.strip()
+        for item in _text(value).split(",")
+        if item.strip() not in ("", "-")
+    ]
+    if not candidates:
+        return "-", "-"
+    address = candidates[-1]
+    if address.startswith("unix:"):
+        return address, ""
+    if address.startswith("["):
+        host, separator, port = address[1:].partition("]:")
+        if separator:
+            return host, port
+        return address, ""
+    host, separator, port = address.rpartition(":")
+    if separator and host:
+        return host, port
+    return address, ""
 
 
 def _duration_ms(value: Any) -> int:
@@ -95,14 +119,23 @@ class NginxJsonParser:
             return None
 
         scheme = _text(payload.get("scheme"), "http")
+        frontend_port = _text(payload.get("server_port"), "443" if scheme == "https" else "80")
+        upstream_address = _text(payload.get("upstream_addr"), "-")
+        backend_ip, backend_port = parse_upstream_endpoint(upstream_address)
         return RequestRecord(
             timestamp=timestamp,
-            frontend_url="{}://{}".format(scheme, host),
+            frontend_url="{}://{}:{}".format(scheme, host, frontend_port),
             method=method,
             uri=uri,
             request=request,
             status=_integer(payload.get("status")),
-            upstream_address=_text(payload.get("upstream_addr"), "-"),
+            upstream_address=upstream_address,
+            source_ip=_text(payload.get("source_addr"), "-"),
+            source_port=_text(payload.get("source_port"), "-"),
+            frontend_port=frontend_port,
+            ssl_protocol=_text(payload.get("ssl_protocol")),
+            backend_ip=backend_ip,
+            backend_port=backend_port,
             backend_tx_bytes=parse_nginx_bytes(payload.get("upstream_bytes_sent")),
             backend_rx_bytes=parse_nginx_bytes(payload.get("upstream_bytes_received")),
             request_length=_integer(payload.get("request_length")),

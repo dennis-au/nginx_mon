@@ -1,4 +1,4 @@
-.TH NGINX-MON 1 "July 2026" "nginx-mon 0.1.0" "User Commands"
+.TH NGINX-MON 1 "July 2026" "nginx-mon 0.2.0" "User Commands"
 .SH NAME
 nginx-mon \- real-time Nginx reverse-proxy traffic monitor
 .SH SYNOPSIS
@@ -52,6 +52,15 @@ the bytes Nginx sent to the upstream. Backend RX is
 .BR $upstream_bytes_received ,
 the bytes Nginx received from the upstream. A request with multiple upstream
 attempts can contain comma-separated values; nginx-mon sums them.
+.PP
+The detail view also displays the TCP source endpoint from
+.BR $remote_addr : $remote_port ,
+the Nginx listener port from
+.BR $server_port ,
+and TLS protocol from
+.BR $ssl_protocol .
+An empty SSL protocol is displayed as Plain. When Nginx is behind another
+proxy, configure its real IP module to log the original client address.
 .SH FILES
 .TP
 .I /usr/share/nginx-mon/nginx_mon.conf

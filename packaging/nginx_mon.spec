@@ -1,5 +1,5 @@
 Name:           nginx_mon
-Version:        0.1.0
+Version:        0.2.0
 Release:        1%{?dist}
 Summary:        Real-time Nginx reverse-proxy traffic monitor
 
@@ -48,5 +48,8 @@ gzip -9c packaging/nginx-mon.1 > %{buildroot}%{_mandir}/man1/nginx-mon.1.gz
 %{_mandir}/man1/nginx-mon.1.gz
 
 %changelog
+* Tue Jul 14 2026 Dennis Au <dennis.518@gmail.com> - 0.2.0-1
+- Add source, backend endpoint, listener port, and TLS telemetry
+
 * Tue Jul 14 2026 Dennis Au <dennis.518@gmail.com> - 0.1.0-1
 - Initial package

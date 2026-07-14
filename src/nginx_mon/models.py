@@ -2,6 +2,19 @@
 
 from dataclasses import dataclass
 from datetime import datetime
+from typing import Tuple
+
+
+def format_endpoint(address: str, port: str) -> str:
+    """Return a display-safe endpoint from an address and optional port."""
+
+    if not address or address == "-":
+        return "-"
+    if not port or port == "-":
+        return address
+    if ":" in address and not address.startswith("unix:"):
+        return "[{}]:{}".format(address, port)
+    return "{}:{}".format(address, port)
 
 
 @dataclass(frozen=True)
@@ -15,11 +28,25 @@ class RequestRecord:
     request: str
     status: int
     upstream_address: str
+    source_ip: str
+    source_port: str
+    frontend_port: str
+    ssl_protocol: str
+    backend_ip: str
+    backend_port: str
     backend_tx_bytes: int
     backend_rx_bytes: int
     request_length: int
     bytes_sent: int
     latency_ms: int
+
+    @property
+    def source_endpoint(self) -> str:
+        return format_endpoint(self.source_ip, self.source_port)
+
+    @property
+    def backend_endpoint(self) -> str:
+        return format_endpoint(self.backend_ip, self.backend_port)
 
 
 @dataclass(frozen=True)
@@ -32,3 +59,6 @@ class FrontendSummary:
     backend_rx_bytes: int
     backend_tx_rate: float
     backend_rx_rate: float
+    source_endpoints: Tuple[str, ...]
+    backend_endpoints: Tuple[str, ...]
+    tls_protocols: Tuple[str, ...]

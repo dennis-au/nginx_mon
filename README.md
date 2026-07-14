@@ -11,6 +11,7 @@ The main table displays one live row per `scheme://host` frontend URL:
 
 - request count in the current 60-second rolling window;
 - backend TX/s and RX/s, plus totals for that same window;
+- TLS state, source endpoints, and selected backend endpoints;
 - a bounded recent-request history for the detail screen.
 
 The monitor maps Nginx variables as follows:
@@ -22,17 +23,26 @@ The monitor maps Nginx variables as follows:
 | Client request bytes | `$request_length` | Complete request bytes received by Nginx. |
 | Client response bytes | `$bytes_sent` | Response bytes sent by Nginx to the client. |
 | Latency | `$request_time` | Full request processing time in seconds. |
+| Source IP/port | `$remote_addr`, `$remote_port` | TCP peer address and port seen by Nginx. |
+| Frontend port | `$server_port` | Nginx listener port that accepted the request. |
+| TLS state | `$ssl_protocol` | TLS protocol for HTTPS, or `Plain` when it is empty. |
 
 Nginx can report comma-separated upstream values when it retries a request.
 `nginx-mon` sums backend TX/RX values across those attempts. It displays the
-request URL as the logged URI, including query parameters.
+request URL as the logged URI, including query parameters. For a retry chain,
+the detail view retains the complete `$upstream_addr` value and shows the final
+upstream endpoint as the selected backend IP:port.
+
+`$remote_addr` is the direct TCP peer. When Nginx sits behind another load
+balancer, configure Nginx's real IP module before logging so this field records
+the original client address.
 
 ## Installation
 
 Install the produced RPM on CentOS Stream 9 / RHEL 9 compatible x86_64 hosts:
 
 ```bash
-sudo dnf install ./nginx_mon-0.1.0-1.el9.x86_64.rpm
+sudo dnf install ./nginx_mon-0.2.0-1.el9.x86_64.rpm
 ```
 
 The installed files are:
@@ -60,7 +70,9 @@ sudo systemctl reload nginx
 
 The sample writes its monitor log to
 `/var/log/nginx/nginx-mon-access.json.log`. It uses `log_format ... escape=json`
-so request URLs and Host headers remain valid JSON.
+so request URLs and Host headers remain valid JSON. Its port 8080 listener is
+plain HTTP; an SSL-enabled Nginx server automatically reports its protocol
+through `$ssl_protocol`.
 
 ## Usage
 
@@ -111,20 +123,20 @@ Run this on CentOS Stream 9 after committing the source files:
 
 ```bash
 mkdir -p ~/rpmbuild/SOURCES
-git archive --format=tar.gz --prefix=nginx_mon-0.1.0/ \
-  -o ~/rpmbuild/SOURCES/nginx_mon-0.1.0.tar.gz HEAD
+git archive --format=tar.gz --prefix=nginx_mon-0.2.0/ \
+  -o ~/rpmbuild/SOURCES/nginx_mon-0.2.0.tar.gz HEAD
 rpmbuild -bb packaging/nginx_mon.spec
 ```
 
 The resulting artifact is under
-`~/rpmbuild/RPMS/x86_64/nginx_mon-0.1.0-1.el9.x86_64.rpm`.
+`~/rpmbuild/RPMS/x86_64/nginx_mon-0.2.0-1.el9.x86_64.rpm`.
 
 Verify and install it:
 
 ```bash
-rpm -qpl ~/rpmbuild/RPMS/x86_64/nginx_mon-0.1.0-1.el9.x86_64.rpm
-rpm -qpR ~/rpmbuild/RPMS/x86_64/nginx_mon-0.1.0-1.el9.x86_64.rpm
-sudo dnf install -y ~/rpmbuild/RPMS/x86_64/nginx_mon-0.1.0-1.el9.x86_64.rpm
+rpm -qpl ~/rpmbuild/RPMS/x86_64/nginx_mon-0.2.0-1.el9.x86_64.rpm
+rpm -qpR ~/rpmbuild/RPMS/x86_64/nginx_mon-0.2.0-1.el9.x86_64.rpm
+sudo dnf install -y ~/rpmbuild/RPMS/x86_64/nginx_mon-0.2.0-1.el9.x86_64.rpm
 /usr/bin/nginx-mon --help
 ```
 

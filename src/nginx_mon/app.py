@@ -30,6 +30,17 @@ def format_bytes(value: float) -> str:
     return "{:.1f} TiB".format(size)
 
 
+def format_endpoints(endpoints: Iterable[str], empty: str = "-") -> str:
+    """Keep a multi-endpoint summary readable in a live table row."""
+
+    values = list(endpoints)
+    if not values:
+        return empty
+    if len(values) <= 2:
+        return ", ".join(values)
+    return "{}, {} (+{})".format(values[0], values[1], len(values) - 2)
+
+
 class RequestDetailScreen(Screen[None]):
     """Display retained requests for one frontend URL."""
 
@@ -70,10 +81,14 @@ class RequestDetailScreen(Screen[None]):
         table = self.query_one("#request-table", DataTable)
         table.add_columns(
             "Time",
+            "Source",
+            "Listen",
+            "TLS",
             "Method",
             "Request URI",
             "Status",
-            "Upstream",
+            "Backend",
+            "Upstream Chain",
             "Backend TX",
             "Backend RX",
             "Latency",
@@ -81,9 +96,13 @@ class RequestDetailScreen(Screen[None]):
         for request in sorted(self.requests, key=lambda item: item.timestamp, reverse=True):
             table.add_row(
                 request.timestamp.astimezone().strftime("%H:%M:%S"),
+                request.source_endpoint,
+                request.frontend_port,
+                request.ssl_protocol or "Plain",
                 request.method,
                 request.uri,
                 str(request.status),
+                request.backend_endpoint,
                 request.upstream_address,
                 format_bytes(request.backend_tx_bytes),
                 format_bytes(request.backend_rx_bytes),
@@ -154,6 +173,9 @@ class MonitorApp(App[None]):
         table = self.query_one("#traffic-table", DataTable)
         table.add_columns(
             "Frontend URL",
+            "TLS",
+            "Sources",
+            "Backends",
             "Requests",
             "Backend TX/s",
             "Backend RX/s",
@@ -186,6 +208,9 @@ class MonitorApp(App[None]):
         for summary in summaries:
             table.add_row(
                 summary.frontend_url,
+                format_endpoints(summary.tls_protocols, empty="Plain"),
+                format_endpoints(summary.source_endpoints),
+                format_endpoints(summary.backend_endpoints),
                 str(summary.request_count),
                 "{}/s".format(format_bytes(summary.backend_tx_rate)),
                 "{}/s".format(format_bytes(summary.backend_rx_rate)),
