@@ -1,4 +1,4 @@
-.TH NGINX-MON 1 "July 2026" "nginx-mon 0.3.0" "User Commands"
+.TH NGINX-MON 1 "July 2026" "nginx-mon 0.4.0" "User Commands"
 .SH NAME
 nginx-mon \- real-time Nginx reverse-proxy traffic monitor
 .SH SYNOPSIS
@@ -39,6 +39,10 @@ Return from request detail to the live frontend table.
 .TP
 .B r
 Refresh the log and table immediately.
+.TP
+.B p
+Pause or resume live log ingestion and table updates. The displayed traffic is
+frozen while paused.
 .TP
 .B q, Ctrl-C
 Quit the monitor.

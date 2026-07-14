@@ -126,7 +126,9 @@ class MonitorApp(App[None]):
 
     TITLE = "nginx-mon"
     SUB_TITLE = "Nginx reverse proxy traffic"
+    theme = "monokai"
     BINDINGS = [
+        Binding("p", "toggle_pause", "Pause/Resume"),
         Binding("r", "refresh", "Refresh"),
         Binding("q", "quit_monitor", "Quit"),
         Binding("ctrl+c", "quit_monitor", "Quit"),
@@ -156,6 +158,7 @@ class MonitorApp(App[None]):
         self.network_resolver = NetworkManagerResolver()
         self.store = TrafficStore(max_records=max_records)
         self.refresh_interval = refresh_interval
+        self.is_paused = False
         self._parsed_request_count = 0
         self._ignored_line_count = 0
 
@@ -201,6 +204,10 @@ class MonitorApp(App[None]):
             # The detail screen replaces the main table until the user returns.
             return
 
+        if self.is_paused:
+            self._update_status([])
+            return
+
         for line in self.follower.poll():
             record = self.parser.parse_line(line)
             if record is None:
@@ -231,10 +238,22 @@ class MonitorApp(App[None]):
             )
         self._update_status(summaries)
 
+    def get_system_commands(self, screen):
+        """Remove Textual's screenshot command from this operational monitor."""
+
+        yield from (
+            command
+            for command in super().get_system_commands(screen)
+            if command.title != "Save screenshot"
+        )
+
     def _update_status(self, summaries: List[FrontendSummary]) -> None:
         status = self.query_one("#status", Static)
         if self.follower.last_error:
             status.update(self.follower.last_error)
+            return
+        if self.is_paused:
+            status.update("Paused | live updates frozen")
             return
         status.update(
             "{} frontend(s) | {} parsed | {} ignored | {}s rolling rate"
@@ -255,6 +274,10 @@ class MonitorApp(App[None]):
             self.push_screen(RequestDetailScreen(frontend_url, requests))
 
     def action_refresh(self) -> None:
+        self.refresh_data()
+
+    def action_toggle_pause(self) -> None:
+        self.is_paused = not self.is_paused
         self.refresh_data()
 
     def action_quit_monitor(self) -> None:

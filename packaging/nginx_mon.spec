@@ -1,5 +1,5 @@
 Name:           nginx_mon
-Version:        0.3.0
+Version:        0.4.0
 Release:        1%{?dist}
 Summary:        Real-time Nginx reverse-proxy traffic monitor
 
@@ -48,6 +48,10 @@ gzip -9c packaging/nginx-mon.1 > %{buildroot}%{_mandir}/man1/nginx-mon.1.gz
 %{_mandir}/man1/nginx-mon.1.gz
 
 %changelog
+* Tue Jul 14 2026 Dennis Au <dennis.518@gmail.com> - 0.4.0-1
+- Default to Monokai and add pause/resume live updates
+- Remove the screenshot command
+
 * Tue Jul 14 2026 Dennis Au <dennis.518@gmail.com> - 0.3.0-1
 - Show the NetworkManager connection for each listener address
 

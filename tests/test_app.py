@@ -88,5 +88,42 @@ def test_monitor_skips_table_refresh_while_detail_screen_is_active():
             await pilot.press("enter")
             app.refresh_data()
             assert app.query_one("#request-table", DataTable).row_count == 1
+            await pilot.press("p")
+            assert app.is_paused
+
+    asyncio.run(exercise_app())
+
+
+def test_monitor_uses_monokai_hides_screenshot_and_pauses_refresh(tmp_path):
+    async def exercise_app():
+        log_file = tmp_path / "access.json.log"
+        log_file.write_text("", encoding="utf-8")
+        app = MonitorApp(log_file=log_file, refresh_interval=60)
+
+        async with app.run_test() as pilot:
+            assert app.theme == "monokai"
+            assert "Save screenshot" not in [
+                command.title for command in app.get_system_commands(app.screen)
+            ]
+
+            await pilot.press("p")
+            assert app.is_paused
+            assert "Paused" in app.query_one("#status").renderable
+
+            timestamp = app.now().isoformat()
+            log_file.write_text(
+                '{{"time":"{}","host":"api.example.test",'
+                '"request":"GET / HTTP/1.1","method":"GET","uri":"/"}}\n'.format(
+                    timestamp
+                ),
+                encoding="utf-8",
+            )
+            app.refresh_data()
+            assert app.query_one("#traffic-table", DataTable).row_count == 0
+
+            await pilot.press("p")
+            assert not app.is_paused
+            app.refresh_data()
+            assert app.query_one("#traffic-table", DataTable).row_count == 1
 
     asyncio.run(exercise_app())

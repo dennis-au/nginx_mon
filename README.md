@@ -48,7 +48,7 @@ name. A missing local address or unavailable host tools is displayed as `-`.
 Install the produced RPM on CentOS Stream 9 / RHEL 9 compatible x86_64 hosts:
 
 ```bash
-sudo dnf install ./nginx_mon-0.3.0-1.el9.x86_64.rpm
+sudo dnf install ./nginx_mon-0.4.0-1.el9.x86_64.rpm
 ```
 
 The installed files are:
@@ -88,8 +88,11 @@ nginx-mon --log-file /var/log/nginx/nginx-mon-access.json.log
 nginx-mon --refresh-interval 0.5 --max-records 10000
 ```
 
-Use Up/Down to move through table rows, Enter or click to view a frontend's
-requests, Escape to return, `r` to refresh, and `q` or Ctrl-C to quit.
+The monitor uses Textual's Monokai theme by default. Use Up/Down to move
+through table rows, Enter or click to view a frontend's requests, Escape to
+return, `p` to pause or resume live updates (freezing the current display),
+`r` to refresh, and `q` or Ctrl-C to quit. The command palette does not offer
+screenshot saving.
 
 ## CentOS 9 Lab Test
 
@@ -129,20 +132,20 @@ Run this on CentOS Stream 9 after committing the source files:
 
 ```bash
 mkdir -p ~/rpmbuild/SOURCES
-git archive --format=tar.gz --prefix=nginx_mon-0.3.0/ \
-  -o ~/rpmbuild/SOURCES/nginx_mon-0.3.0.tar.gz HEAD
+git archive --format=tar.gz --prefix=nginx_mon-0.4.0/ \
+  -o ~/rpmbuild/SOURCES/nginx_mon-0.4.0.tar.gz HEAD
 rpmbuild -bb packaging/nginx_mon.spec
 ```
 
 The resulting artifact is under
-`~/rpmbuild/RPMS/x86_64/nginx_mon-0.3.0-1.el9.x86_64.rpm`.
+`~/rpmbuild/RPMS/x86_64/nginx_mon-0.4.0-1.el9.x86_64.rpm`.
 
 Verify and install it:
 
 ```bash
-rpm -qpl ~/rpmbuild/RPMS/x86_64/nginx_mon-0.3.0-1.el9.x86_64.rpm
-rpm -qpR ~/rpmbuild/RPMS/x86_64/nginx_mon-0.3.0-1.el9.x86_64.rpm
-sudo dnf install -y ~/rpmbuild/RPMS/x86_64/nginx_mon-0.3.0-1.el9.x86_64.rpm
+rpm -qpl ~/rpmbuild/RPMS/x86_64/nginx_mon-0.4.0-1.el9.x86_64.rpm
+rpm -qpR ~/rpmbuild/RPMS/x86_64/nginx_mon-0.4.0-1.el9.x86_64.rpm
+sudo dnf install -y ~/rpmbuild/RPMS/x86_64/nginx_mon-0.4.0-1.el9.x86_64.rpm
 /usr/bin/nginx-mon --help
 ```
 
