@@ -48,12 +48,12 @@ Nginx JSON log contract
 
 ### Phase 2: Interactive Monitor
 
-- [ ] Task 3: Build the Textual main screen with periodically refreshed
+- [x] Task 3: Build the Textual main screen with periodically refreshed
   frontend summary rows and refresh/quit bindings.
   Acceptance: table displays frontend URL, request count, backend TX/RX rates,
   and a readable log status.
   Verification: application smoke test plus model-driven UI unit tests.
-- [ ] Task 4: Add the selectable per-frontend request detail screen.
+- [x] Task 4: Add the selectable per-frontend request detail screen.
   Acceptance: Enter/click opens method, path, status, upstream, TX/RX, and
   latency for retained requests; Escape returns to the live table.
   Verification: Textual pilot test.
