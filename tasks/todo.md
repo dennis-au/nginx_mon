@@ -19,7 +19,7 @@
 ## 2. Textual Monitor
 
 - [x] Install the declared Textual version on `192.168.0.101`.
-- [ ] Add the `nginx-mon` command-line entry point and argument validation.
+- [x] Add the `nginx-mon` command-line entry point and argument validation.
 - [x] Add a main Textual screen with a log-status line and live traffic table.
 - [x] Show frontend URL, request count, backend TX/s, backend RX/s, and byte totals.
 - [x] Refresh the table from the access log on a fixed interval.
