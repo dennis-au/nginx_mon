@@ -60,15 +60,15 @@ Nginx JSON log contract
 
 ### Checkpoint: Interactive Monitor
 
-- [ ] Full local test suite passes; the TUI opens against a sample log.
+- [x] Full CentOS 9 test suite passes; the installed TUI opens against a live proxy log.
 
 ### Phase 3: Packaging and Lab Validation
 
-- [ ] Task 5: Add the Nginx format/proxy sample, README, man page, PyInstaller
+- [x] Task 5: Add the Nginx format/proxy sample, README, man page, PyInstaller
   build flow, and RPM spec.
   Acceptance: instructions configure a test proxy and produce an x86_64 RPM.
   Verification: documentation command review and package syntax checks.
-- [ ] Task 6: Build the RPM on CentOS Stream 9, install it, generate proxied
+- [x] Task 6: Build the RPM on CentOS Stream 9, install it, generate proxied
   traffic, and capture evidence that the monitor parses the live log.
   Acceptance: installed executable works without a project Python environment;
   the RPM contains the binary, Nginx sample, and man page.
@@ -76,7 +76,7 @@ Nginx JSON log contract
 
 ### Checkpoint: Complete
 
-- [ ] Tests, build, TUI smoke test, RPM build, and installation test pass.
+- [x] Tests, build, TUI smoke test, RPM build, and installation test pass.
 - [ ] Incremental commits are pushed to the configured GitHub remote.
 
 ## Risks and Mitigations

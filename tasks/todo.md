@@ -1,5 +1,14 @@
 # nginx_mon Delivery Checklist
 
+## 0. CentOS 9 Lab Bootstrap
+
+- [x] Confirm `root@192.168.0.101` accepts SSH with the original credentials.
+- [x] Verify CentOS Stream 9, x86_64, Python 3.9, RPM, and SELinux enforcing mode.
+- [x] Repair the minimal installation's missing DNS resolver configuration.
+- [x] Install Git, Python build tools, RPM build tools, Nginx, curl, and ApacheBench.
+- [x] Copy the working tree to `/root/nginx_mon`.
+- [x] Create `/root/nginx_mon/.venv` and install Textual 0.89.1, pytest 8.4.2, and PyInstaller 6.21.0.
+
 ## 1. Project and Data Foundation
 
 - [x] Create the `codex/nginx-mon-prototype` branch and configure the GitHub remote.
@@ -30,7 +39,7 @@
 - [x] Support Escape to return from the detail screen.
 - [x] Add a Textual pilot test for table and detail navigation.
 - [x] Run the Textual test on `192.168.0.101`.
-- [ ] Run a manual terminal smoke test on `192.168.0.101`.
+- [x] Run a manual terminal smoke test on `192.168.0.101`.
 
 ## 3. Nginx Configuration and Documentation
 
@@ -45,27 +54,27 @@
 
 - [x] Add a PyInstaller build command that produces one x86_64 executable.
 - [x] Add `.spec` metadata, build prerequisites, and source-tarball instructions.
-- [x] Define installation of the binary in `/usr/bin/nginx-mon` from the RPM.
-- [x] Define installation of the Nginx sample under `/usr/share/nginx-mon/` from the RPM.
-- [x] Define installation of the compressed man page from the RPM.
-- [ ] Build the RPM on `192.168.0.101`.
-- [ ] Verify RPM contents and dependencies with `rpm -qpl` and `rpm -qpR`.
-- [ ] Install the RPM and confirm the binary runs without the project virtual environment.
+- [x] Install the binary in `/usr/bin/nginx-mon` from the RPM.
+- [x] Install the Nginx sample under `/usr/share/nginx-mon/` from the RPM.
+- [x] Install the compressed man page from the RPM.
+- [x] Build the RPM on `192.168.0.101`.
+- [x] Verify RPM contents and dependencies with `rpm -qpl` and `rpm -qpR`.
+- [x] Install the RPM and confirm the binary runs without the project virtual environment.
 
 ## 5. End-to-End Lab Validation
 
-- [ ] Install and start Nginx on `192.168.0.101`.
-- [ ] Start a local HTTP test backend on `192.168.0.101`.
-- [ ] Configure Nginx to proxy to the test backend and enable the monitor log format.
-- [ ] Generate requests through the Nginx frontend with `curl` or `ab`.
-- [ ] Verify live table rows show frontend URL and nonzero backend TX/RX.
-- [ ] Open a row and verify all per-request details against the access log.
-- [ ] Record the final RPM artifact path and installation-test result.
+- [x] Install and start Nginx on `192.168.0.101`.
+- [x] Start a local HTTP test backend on `192.168.0.101`.
+- [x] Configure Nginx to proxy to the test backend and enable the monitor log format.
+- [x] Generate requests through the Nginx frontend with `curl` and ApacheBench.
+- [x] Verify live table rows show frontend URL and nonzero backend TX/RX.
+- [x] Open a row and verify all per-request details against the access log.
+- [x] Record the matching RPM artifacts: `/root/rpmbuild/RPMS/x86_64/nginx_mon-0.1.0-1.el9.x86_64.rpm` and `artifacts/nginx_mon-0.1.0-1.el9.x86_64.rpm`.
 
 ## 6. Quality and Source Control
 
-- [ ] Run the complete test suite on the lab host.
-- [ ] Review the final diff for correctness, security, readability, and performance.
-- [ ] Confirm no credentials, build outputs, or virtual environments are tracked.
-- [ ] Commit each completed implementation slice with a descriptive message.
+- [x] Run the complete test suite on the lab host.
+- [x] Review the final diff for correctness, security, readability, and performance.
+- [x] Confirm no credentials, build outputs, or virtual environments are tracked.
+- [x] Commit each completed implementation slice with a descriptive message.
 - [ ] Push the branch and verify the GitHub remote contains source, spec, and build instructions.
