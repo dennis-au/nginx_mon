@@ -14,8 +14,22 @@ not modify Nginx logs.
 .SH OPTIONS
 .TP
 .B --log-file PATH
-JSON access log to follow. The default is
+JSON access log to follow. Unless discovery is requested, the default is
 .IR /var/log/nginx/nginx-mon-access.json.log .
+.TP
+.B --detect-nginx
+Locate one running Nginx master and follow its only open, nonempty access log
+that matches nginx-mon's JSON log format. This Linux-only convenience reads
+.IR /proc ;
+it does not execute Nginx or parse its configuration. If discovery is
+ambiguous or no matching log has traffic yet, use
+.BR --log-file .
+.TP
+.B --nginx-pid PID
+Locate the monitor log for the specified running Nginx master process. This
+also enables discovery. An explicit
+.B --log-file
+takes precedence over both discovery options.
 .TP
 .B --refresh-interval SECONDS
 Positive table refresh interval. The default is 1 second.
@@ -72,6 +86,14 @@ If NetworkManager does not own the interface, the interface name is used;
 unavailable network information is shown as a dash.
 An empty SSL protocol is displayed as Plain. When Nginx is behind another
 proxy, configure its real IP module to log the original client address.
+.PP
+For a source-built Nginx, put the supplied log format in the existing
+.B http
+configuration and its access log directive in the deployed proxy server. The
+sample test server and its RPM paths are not required. The account running
+.B nginx-mon
+must be able to read the access log and the selected process descriptors under
+.IR /proc .
 .SH FILES
 .TP
 .I /usr/share/nginx-mon/nginx_mon.conf

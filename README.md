@@ -85,6 +85,8 @@ through `$ssl_protocol`.
 ```bash
 nginx-mon
 nginx-mon --log-file /var/log/nginx/nginx-mon-access.json.log
+nginx-mon --detect-nginx
+nginx-mon --nginx-pid 1234
 nginx-mon --refresh-interval 0.5 --max-records 10000
 ```
 
@@ -93,6 +95,32 @@ through table rows, Enter or click to view a frontend's requests, Escape to
 return, `p` to pause or resume live updates (freezing the current display),
 `r` to refresh, and `q` or Ctrl-C to quit. The command palette does not offer
 screenshot saving.
+
+## Source-Built Nginx
+
+The monitor does not depend on an RPM, a specific Nginx prefix, or systemd.
+For a source-built Nginx, add the supplied JSON `log_format` to its existing
+`http` block and the matching `access_log` directive to the deployed proxy
+server. Do not copy the sample's test `server` block into an existing vhost.
+Choose a writable, readable local log path under the installation's own prefix.
+
+When exactly one running Nginx instance has one open, nonempty log that matches
+the monitor JSON contract, start it with:
+
+```bash
+nginx-mon --detect-nginx
+```
+
+Discovery reads the running master and worker descriptors under `/proc`; it
+does not execute Nginx or parse configuration includes. If multiple master
+processes run, select one with `--nginx-pid PID`. If the log is empty, multiple
+matching logs are open, `/proc` is restricted, or Nginx writes to syslog,
+journald, stdout, or a pipe, pass the path explicitly with `--log-file`.
+
+The account running `nginx-mon` must be able to read both `/proc/<pid>/fd` and
+the log file. The supplied `$ssl_protocol` field requires Nginx's HTTP SSL
+module; omit that JSON key for a plaintext-only build, which the monitor shows
+as `Plain`.
 
 ## CentOS 9 Lab Test
 
