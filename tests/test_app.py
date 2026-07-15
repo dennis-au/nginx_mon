@@ -1,9 +1,11 @@
 import asyncio
 from pathlib import Path
+from unittest.mock import patch
 
-from textual.widgets import DataTable
+from textual.widgets import DataTable, Switch
 
 from nginx_mon.app import MonitorApp
+from nginx_mon.configuration import GlobalLogResult, NginxConfigurationError
 from nginx_mon.models import RequestRecord
 
 
@@ -125,5 +127,46 @@ def test_monitor_uses_monokai_hides_screenshot_and_pauses_refresh(tmp_path):
             assert not app.is_paused
             app.refresh_data()
             assert app.query_one("#traffic-table", DataTable).row_count == 1
+
+    asyncio.run(exercise_app())
+
+
+def test_monitor_global_json_log_switch_toggles_the_managed_log():
+    async def exercise_app():
+        result = GlobalLogResult(
+            pid=123,
+            config_file=Path("/etc/nginx/nginx.conf"),
+            log_file=Path("/var/log/nginx/nginx-mon-access.json.log"),
+        )
+        with patch("nginx_mon.app.global_json_log_is_enabled", return_value=True), patch(
+            "nginx_mon.app.toggle_global_json_log", return_value=(False, result)
+        ) as toggle:
+            app = MonitorApp(log_file=Path("/does/not/exist"), refresh_interval=60)
+            async with app.run_test() as pilot:
+                control = app.query_one("#global-json-log-toggle", Switch)
+                assert control.value is True
+                assert not control.disabled
+
+                await pilot.click("#global-json-log-toggle")
+                await pilot.pause()
+
+                toggle.assert_called_once_with()
+                assert control.value is False
+                assert not control.disabled
+
+    asyncio.run(exercise_app())
+
+
+def test_monitor_disables_global_json_log_switch_when_management_is_unavailable():
+    async def exercise_app():
+        with patch(
+            "nginx_mon.app.global_json_log_is_enabled",
+            side_effect=NginxConfigurationError("No Nginx master process was found"),
+        ):
+            app = MonitorApp(log_file=Path("/does/not/exist"), refresh_interval=60)
+            async with app.run_test():
+                control = app.query_one("#global-json-log-toggle", Switch)
+                assert control.disabled
+                assert "No Nginx master process" in str(control.tooltip)
 
     asyncio.run(exercise_app())

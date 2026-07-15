@@ -151,7 +151,10 @@ The monitor uses Textual's Monokai theme by default. Use Up/Down to move
 through table rows, Enter or click to view a frontend's requests, Escape to
 return, `p` to pause or resume live updates (freezing the current display),
 `r` to refresh, and `q` or Ctrl-C to quit. The command palette does not offer
-screenshot saving.
+screenshot saving. The main screen also has a `Global JSON Log` switch. It
+uses the same safe managed toggle as the command line; it is disabled with the
+reason in its tooltip when the current user cannot manage the running Nginx
+master.
 
 ## Source-Built Nginx
 

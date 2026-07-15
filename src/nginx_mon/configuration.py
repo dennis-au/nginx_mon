@@ -149,13 +149,15 @@ def toggle_global_json_log(
     it was disabled.
     """
 
-    if _managed_global_log_is_enabled(nginx_pid, proc_root, runner):
+    if global_json_log_is_enabled(nginx_pid, proc_root, runner):
         return False, disable_global_json_log(nginx_pid, proc_root, runner, signal_sender)
     return True, enable_global_json_log(nginx_pid, log_file, proc_root, runner, signal_sender)
 
 
-def _managed_global_log_is_enabled(
-    nginx_pid: Optional[int], proc_root: Path, runner: Runner
+def global_json_log_is_enabled(
+    nginx_pid: Optional[int] = None,
+    proc_root: Path = PROC_ROOT,
+    runner: Runner = subprocess.run,
 ) -> bool:
     _pid, executable = _select_running_master(nginx_pid, proc_root)
     config_file = _configuration_path(executable, runner)

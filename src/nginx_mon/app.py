@@ -7,10 +7,16 @@ from typing import Iterable, List
 
 from textual.app import App, ComposeResult
 from textual.binding import Binding
+from textual.containers import Horizontal
 from textual.css.query import NoMatches
 from textual.screen import Screen
-from textual.widgets import DataTable, Footer, Header, Static
+from textual.widgets import DataTable, Footer, Header, Static, Switch
 
+from .configuration import (
+    NginxConfigurationError,
+    global_json_log_is_enabled,
+    toggle_global_json_log,
+)
 from .models import FrontendSummary, RequestRecord
 from .network import NetworkManagerResolver
 from .parser import NginxJsonParser
@@ -135,10 +141,24 @@ class MonitorApp(App[None]):
     ]
 
     CSS = """
-    #status {
-        height: 1;
+    #monitor-toolbar {
+        height: 3;
         padding: 0 1;
+        align: left middle;
+    }
+
+    #status {
+        width: 1fr;
         color: $text-muted;
+    }
+
+    #global-json-log-label {
+        width: auto;
+        margin-right: 1;
+    }
+
+    #global-json-log-toggle {
+        width: auto;
     }
 
     #traffic-table {
@@ -168,7 +188,10 @@ class MonitorApp(App[None]):
 
     def compose(self) -> ComposeResult:
         yield Header(show_clock=True)
-        yield Static("Starting monitor...", id="status")
+        with Horizontal(id="monitor-toolbar"):
+            yield Static("Starting monitor...", id="status")
+            yield Static("Global JSON Log", id="global-json-log-label")
+            yield Switch(id="global-json-log-toggle", tooltip="Toggle managed global JSON logging")
         yield DataTable(
             id="traffic-table",
             cursor_type="row",
@@ -192,6 +215,7 @@ class MonitorApp(App[None]):
             "RX Total",
         )
         table.focus()
+        self._sync_global_json_log_toggle()
         self.refresh_data()
         self.set_interval(self.refresh_interval, self.refresh_data)
 
@@ -272,6 +296,33 @@ class MonitorApp(App[None]):
         requests = self.store.requests_for(frontend_url)
         if requests:
             self.push_screen(RequestDetailScreen(frontend_url, requests))
+
+    def on_switch_changed(self, event: Switch.Changed) -> None:
+        if event.switch.id != "global-json-log-toggle":
+            return
+
+        previous_value = not event.value
+        event.switch.disabled = True
+        try:
+            enabled, _result = toggle_global_json_log()
+            event.switch.set_reactive(Switch.value, enabled)
+            event.switch.tooltip = "Toggle managed global JSON logging"
+        except NginxConfigurationError as error:
+            event.switch.set_reactive(Switch.value, previous_value)
+            event.switch.tooltip = str(error)
+        finally:
+            event.switch.disabled = False
+
+    def _sync_global_json_log_toggle(self) -> None:
+        control = self.query_one("#global-json-log-toggle", Switch)
+        try:
+            control.set_reactive(Switch.value, global_json_log_is_enabled())
+            control.disabled = False
+            control.tooltip = "Toggle managed global JSON logging"
+        except NginxConfigurationError as error:
+            control.set_reactive(Switch.value, False)
+            control.disabled = True
+            control.tooltip = str(error)
 
     def action_refresh(self) -> None:
         self.refresh_data()

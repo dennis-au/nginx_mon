@@ -97,6 +97,11 @@ Refresh the log and table immediately.
 Pause or resume live log ingestion and table updates. The displayed traffic is
 frozen while paused.
 .TP
+.B Global JSON Log switch
+The main screen switch enables or disables nginx-mon's marked global JSON log
+mirror. It is disabled when the current user cannot safely manage the selected
+Nginx master; its tooltip gives the reason.
+.TP
 .B q, Ctrl-C
 Quit the monitor.
 .SH NGINX LOG FORMAT
