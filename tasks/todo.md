@@ -79,3 +79,15 @@
 - [x] Confirm no credentials, build outputs, or virtual environments are tracked.
 - [x] Commit each completed implementation slice with a descriptive message.
 - [x] Push the branch and verify the GitHub remote contains source, spec, and build instructions.
+
+## 7. Source-Built Nginx Log Discovery
+
+- [ ] Keep `--log-file` as the explicit-path override; add opt-in `--detect-nginx` and optional `--nginx-pid` selection.
+- [ ] Discover Nginx master processes from `/proc/<pid>/comm` and `/proc/<pid>/cmdline`, and report the executable via `/proc/<pid>/exe` without executing it.
+- [ ] Inspect the selected master and direct-child file descriptors under `/proc/<pid>/fd`; retain only regular, non-deleted files and deduplicate by device/inode.
+- [ ] Sample only the recent complete lines of each candidate and select it only when `NginxJsonParser` accepts the monitor JSON schema.
+- [ ] Fail with actionable candidates when no valid log, multiple valid logs, or inaccessible `/proc` entries prevent an unambiguous choice; do not guess a log path.
+- [ ] Drain a renamed log's old inode before switching to the replacement so rotation cannot drop requests written before Nginx reopens it.
+- [ ] Add focused fake-proc tests for master selection, permission/race handling, FD filtering, deduplication, empty logs, invalid JSON, and multiple valid logs.
+- [ ] Document source-build setup: custom prefix/config locations, required JSON format, readable log permissions, and the SSL-module caveat for `$ssl_protocol`.
+- [ ] Validate an installed CentOS 9 binary against a custom-prefix Nginx instance and normal rename-based log rotation.
