@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [0.6.0] - 2026-07-15
 
 ### Added
 
@@ -12,8 +12,6 @@
   toggle operation.
 - `--global-log-path` selects the mirror location for source-built and
   nonstandard Nginx installations.
-
-## [0.6.0] - 2026-07-15
 
 ### Changed
 
