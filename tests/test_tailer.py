@@ -42,3 +42,18 @@ def test_follower_recovers_after_log_truncation_and_rotation(tmp_path):
     log_file.write_text("rotated\n", encoding="utf-8")
 
     assert follower.poll() == ["rotated\n"]
+
+
+def test_follower_drains_writes_to_the_rotated_inode_before_switching(tmp_path):
+    log_file = tmp_path / "access.json.log"
+    log_file.write_text("first\n", encoding="utf-8")
+    follower = LogFollower(log_file)
+    assert follower.poll() == ["first\n"]
+
+    rotated_file = tmp_path / "access.json.log.1"
+    log_file.rename(rotated_file)
+    with rotated_file.open("a", encoding="utf-8") as handle:
+        handle.write("late old file\n")
+    log_file.write_text("new file\n", encoding="utf-8")
+
+    assert follower.poll() == ["late old file\n", "new file\n"]
