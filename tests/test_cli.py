@@ -4,6 +4,7 @@ from unittest.mock import Mock, patch
 import pytest
 
 from nginx_mon.cli import build_parser, main
+from nginx_mon.configuration import GlobalLogResult
 from nginx_mon.discovery import NginxDiscoveryError
 
 
@@ -13,6 +14,21 @@ def test_cli_uses_documented_monitor_defaults():
     assert args.log_file is None
     assert args.refresh_interval == 1.0
     assert args.max_records == 5_000
+
+
+def test_cli_accepts_explicit_global_json_log_management_options():
+    args = build_parser().parse_args(
+        ["--enable-global-json-log", "--global-log-path", "/logs/nginx-mon.json"]
+    )
+
+    assert args.enable_global_json_log is True
+    assert args.disable_global_json_log is False
+    assert args.global_log_path == Path("/logs/nginx-mon.json")
+
+
+def test_cli_rejects_a_global_log_path_without_an_enable_operation():
+    with pytest.raises(SystemExit):
+        main(["--global-log-path", "/logs/nginx-mon.json"])
 
 
 @pytest.mark.parametrize(
@@ -39,6 +55,41 @@ def test_main_constructs_and_runs_the_monitor():
         max_records=10,
     )
     app.run.assert_called_once_with()
+
+
+def test_main_enables_the_global_json_log_without_starting_the_monitor(capsys):
+    result = GlobalLogResult(
+        pid=123,
+        config_file=Path("/etc/nginx/nginx.conf"),
+        log_file=Path("/var/log/nginx/nginx-mon-access.json.log"),
+    )
+    with patch("nginx_mon.cli.enable_global_json_log", return_value=result) as enable, patch(
+        "nginx_mon.cli.MonitorApp"
+    ) as app_class:
+        assert main(["--enable-global-json-log", "--nginx-pid", "123"]) == 0
+
+    enable.assert_called_once_with(
+        nginx_pid=123,
+        log_file=Path("/var/log/nginx/nginx-mon-access.json.log"),
+    )
+    app_class.assert_not_called()
+    assert "Enabled global JSON log" in capsys.readouterr().out
+
+
+def test_main_disables_the_global_json_log_without_starting_the_monitor(capsys):
+    result = GlobalLogResult(
+        pid=123,
+        config_file=Path("/etc/nginx/nginx.conf"),
+        log_file=Path("/var/log/nginx/nginx-mon-access.json.log"),
+    )
+    with patch("nginx_mon.cli.disable_global_json_log", return_value=result) as disable, patch(
+        "nginx_mon.cli.MonitorApp"
+    ) as app_class:
+        assert main(["--disable-global-json-log"]) == 0
+
+    disable.assert_called_once_with(nginx_pid=None)
+    app_class.assert_not_called()
+    assert "Disabled global JSON log" in capsys.readouterr().out
 
 
 def test_main_auto_detects_a_log_file_without_command_line_options():

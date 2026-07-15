@@ -1,5 +1,14 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- `--enable-global-json-log` and `--disable-global-json-log` safely manage an
+  additional global JSON access-log mirror for the running Nginx instance.
+- `--global-log-path` selects the mirror location for source-built and
+  nonstandard Nginx installations.
+
 ## [0.6.0] - 2026-07-15
 
 ### Changed

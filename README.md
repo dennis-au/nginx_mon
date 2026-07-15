@@ -64,6 +64,50 @@ a project Python environment.
 
 ## Nginx Setup
 
+### Manage the global default
+
+On a host with a running Nginx master, this is the quickest safe setup:
+
+```bash
+sudo nginx-mon --enable-global-json-log
+nginx-mon --log-file /var/log/nginx/nginx-mon-access.json.log
+```
+
+The command obtains the running master's executable from `/proc`, uses
+`nginx -V` to find its compiled main configuration path, then adds one marked
+include to that file's top-level `http` block. The included fragment is placed
+next to the main configuration file and writes a JSON mirror to
+`/var/log/nginx/nginx-mon-access.json.log`. Existing global `access_log`
+directives remain unchanged. The command runs `nginx -t` and sends HUP to the
+same master only after validation succeeds.
+
+Use the explicit log path until the first request creates a valid JSON record;
+after that, ordinary `nginx-mon` autodetection will find it.
+For process-control safety, the command only manages a master owned by the
+same effective user as `nginx-mon`; the ordinary root-run Nginx service should
+therefore be managed with `sudo`.
+
+Use a writable existing directory for a source-built Nginx or a nonstandard
+log location:
+
+```bash
+sudo nginx-mon --enable-global-json-log \
+  --global-log-path /usr/local/nginx/logs/nginx-mon-access.json.log
+```
+
+Disable only the fragment that nginx-mon created, while retaining the original
+default logging configuration:
+
+```bash
+sudo nginx-mon --disable-global-json-log
+```
+
+This is a global **default**. A `server` or `location` with its own
+`access_log` directive does not inherit it; add the supplied JSON `access_log`
+to that scope when you need to monitor that traffic.
+
+### Add a specific virtual host
+
 Copy the provided sample into Nginx's included configuration directory, then
 replace `api.lab.test` and the upstream address with the deployed values.
 
@@ -87,6 +131,8 @@ nginx-mon
 nginx-mon --log-file /var/log/nginx/nginx-mon-access.json.log
 nginx-mon --detect-nginx  # explicit form of the default autodetection
 nginx-mon --nginx-pid 1234
+sudo nginx-mon --enable-global-json-log
+sudo nginx-mon --disable-global-json-log
 nginx-mon --refresh-interval 0.5 --max-records 10000
 ```
 
@@ -99,10 +145,15 @@ screenshot saving.
 ## Source-Built Nginx
 
 The monitor does not depend on an RPM, a specific Nginx prefix, or systemd.
-For a source-built Nginx, add the supplied JSON `log_format` to its existing
-`http` block and the matching `access_log` directive to the deployed proxy
-server. Do not copy the sample's test `server` block into an existing vhost.
-Choose a writable, readable local log path under the installation's own prefix.
+For a source-built Nginx whose main configuration has a top-level `http`
+block, `sudo nginx-mon --enable-global-json-log --global-log-path PATH`
+manages the global default as above. It discovers the compiled main-config
+path using that running master's executable, not `systemctl` or an RPM path.
+For a virtual host with its own `access_log`, add the supplied JSON
+`log_format` to its existing `http` block and the matching `access_log`
+directive to the deployed proxy server. Do not copy the sample's test `server`
+block into an existing vhost. Choose a writable, readable local log path under
+the installation's own prefix.
 
 By default, nginx-mon locates the running Nginx process and its one open,
 nonempty log that matches the monitor JSON contract. Start it with:

@@ -4,14 +4,19 @@ nginx-mon \- real-time Nginx reverse-proxy traffic monitor
 .SH SYNOPSIS
 .B nginx-mon
 .RI [ --log-file " PATH" ]
+.RI [ --detect-nginx ]
+.RI [ --nginx-pid " PID" ]
+.RI [ --enable-global-json-log ]
+.RI [ --disable-global-json-log ]
+.RI [ --global-log-path " PATH" ]
 .RI [ --refresh-interval " SECONDS" ]
 .RI [ --max-records " COUNT" ]
 .SH DESCRIPTION
 .B nginx-mon
 tails an Nginx JSON access log and displays upstream traffic grouped by
-frontend virtual host. It retains a bounded in-memory request history and does
-not modify Nginx logs. By default it locates one active nginx-mon JSON log
-through the running Nginx process descriptors under
+frontend virtual host. It retains a bounded in-memory request history. By
+default it locates one active nginx-mon JSON log through the running Nginx
+process descriptors under
 .IR /proc .
 .SH OPTIONS
 .TP
@@ -32,6 +37,30 @@ Locate the monitor log for the specified running Nginx master process. This
 also enables discovery. An explicit
 .B --log-file
 takes precedence over both discovery options.
+.TP
+.B --enable-global-json-log
+Add an nginx-mon managed include to the running Nginx instance's main
+configuration file, inside its top-level
+.B http
+block. The fragment defines a JSON log format and adds an additional global
+default access log. Existing global logs remain unchanged. The command runs
+.B nginx -t
+and sends HUP to the selected master only after validation succeeds. It
+requires permission to modify the Nginx configuration and signal the process.
+For process-control safety, nginx-mon manages only a master owned by the same
+effective user.
+.TP
+.B --disable-global-json-log
+Remove only the marked include and fragment created by
+.BR --enable-global-json-log ,
+then validate and reload the selected Nginx master.
+.TP
+.B --global-log-path PATH
+JSON log path used by
+.BR --enable-global-json-log .
+The default is
+.IR /var/log/nginx/nginx-mon-access.json.log .
+The parent directory must exist and be writable by the Nginx master.
 .TP
 .B --refresh-interval SECONDS
 Positive table refresh interval. The default is 1 second.
@@ -99,6 +128,10 @@ must be able to read the access log and the selected process descriptors under
 An ordinary combined-format access log cannot supply nginx-mon's upstream,
 listener, and TLS fields; configure the supplied JSON log format and generate
 at least one request before automatic discovery.
+.PP
+The managed global log is inherited only by virtual hosts without their own
+.B access_log
+directive. Add the JSON log explicitly to any virtual host that defines one.
 .SH FILES
 .TP
 .I /usr/share/nginx-mon/nginx_mon.conf

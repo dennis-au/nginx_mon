@@ -6,6 +6,12 @@ from typing import Optional, Sequence
 
 from . import __version__
 from .app import MonitorApp
+from .configuration import (
+    DEFAULT_GLOBAL_LOG_FILE,
+    NginxConfigurationError,
+    disable_global_json_log,
+    enable_global_json_log,
+)
 from .discovery import NginxDiscoveryError, discover_log_file
 
 DEFAULT_REFRESH_INTERVAL = 1.0
@@ -52,7 +58,24 @@ def build_parser() -> argparse.ArgumentParser:
         "--nginx-pid",
         type=_positive_int,
         metavar="PID",
-        help="locate the monitor log for this Nginx master process",
+        help="select this Nginx master process for discovery or global-log management",
+    )
+    management = parser.add_mutually_exclusive_group()
+    management.add_argument(
+        "--enable-global-json-log",
+        action="store_true",
+        help="add nginx-mon's JSON log as an additional global Nginx access log and reload",
+    )
+    management.add_argument(
+        "--disable-global-json-log",
+        action="store_true",
+        help="remove nginx-mon's managed global JSON access log and reload",
+    )
+    parser.add_argument(
+        "--global-log-path",
+        type=Path,
+        metavar="PATH",
+        help="path for --enable-global-json-log (default: {})".format(DEFAULT_GLOBAL_LOG_FILE),
     )
     parser.add_argument(
         "--refresh-interval",
@@ -75,6 +98,34 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
+    if args.global_log_path is not None and not args.enable_global_json_log:
+        parser.error("--global-log-path requires --enable-global-json-log")
+    if args.enable_global_json_log:
+        try:
+            result = enable_global_json_log(
+                nginx_pid=args.nginx_pid,
+                log_file=args.global_log_path or DEFAULT_GLOBAL_LOG_FILE,
+            )
+        except NginxConfigurationError as error:
+            parser.error(str(error))
+        print(
+            "Enabled global JSON log: {} (Nginx PID {}, {})\n"
+            "Start monitoring with: nginx-mon --log-file {}".format(
+                result.log_file, result.pid, result.config_file, result.log_file
+            )
+        )
+        return 0
+    if args.disable_global_json_log:
+        try:
+            result = disable_global_json_log(nginx_pid=args.nginx_pid)
+        except NginxConfigurationError as error:
+            parser.error(str(error))
+        print(
+            "Disabled global JSON log: {} (Nginx PID {}, {})".format(
+                result.log_file, result.pid, result.config_file
+            )
+        )
+        return 0
     if args.log_file is not None:
         log_file = args.log_file
     else:
