@@ -90,4 +90,4 @@
 - [x] Drain a renamed log's unread bytes before opening the replacement, retaining entries already written when rotation is detected.
 - [x] Add focused fake-proc tests for master selection, permission/race handling, FD filtering, deduplication, empty logs, invalid JSON, and multiple valid logs.
 - [x] Document source-build setup: custom prefix/config locations, required JSON format, readable log permissions, and the SSL-module caveat for `$ssl_protocol`.
-- [ ] Validate an installed CentOS 9 binary against a custom-prefix Nginx instance and normal rename-based log rotation.
+- [x] Validate an installed CentOS 9 binary against a custom-prefix Nginx instance and normal rename-based log rotation.

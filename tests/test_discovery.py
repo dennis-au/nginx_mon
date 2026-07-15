@@ -121,8 +121,19 @@ def test_rejects_an_empty_json_log(tmp_path):
 
 def test_requires_a_master_when_multiple_nginx_instances_are_running(tmp_path):
     proc_root = tmp_path / "proc"
-    _process(proc_root, 100, "nginx: master p", b"nginx: master process /one/nginx\0")
-    _process(proc_root, 200, "nginx: master p", b"nginx: master process /two/nginx\0")
+    first_master = _process(
+        proc_root, 100, "nginx: master p", b"nginx: master process /one/nginx\0"
+    )
+    second_master = _process(
+        proc_root, 200, "nginx: master p", b"nginx: master process /two/nginx\0"
+    )
+    first_master.joinpath("exe").unlink()
+    first_master.joinpath("exe").symlink_to("/one/nginx")
+    second_master.joinpath("exe").unlink()
+    second_master.joinpath("exe").symlink_to("/two/nginx")
 
-    with pytest.raises(NginxDiscoveryError, match="Multiple Nginx master processes"):
+    with pytest.raises(NginxDiscoveryError, match="Multiple Nginx master processes") as error:
         discover_log_file(proc_root=proc_root)
+
+    assert "100 (/one/nginx)" in str(error.value)
+    assert "200 (/two/nginx)" in str(error.value)

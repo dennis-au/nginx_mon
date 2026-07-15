@@ -48,7 +48,7 @@ name. A missing local address or unavailable host tools is displayed as `-`.
 Install the produced RPM on CentOS Stream 9 / RHEL 9 compatible x86_64 hosts:
 
 ```bash
-sudo dnf install ./nginx_mon-0.4.0-1.el9.x86_64.rpm
+sudo dnf install ./nginx_mon-0.5.0-1.el9.x86_64.rpm
 ```
 
 The installed files are:
@@ -160,20 +160,20 @@ Run this on CentOS Stream 9 after committing the source files:
 
 ```bash
 mkdir -p ~/rpmbuild/SOURCES
-git archive --format=tar.gz --prefix=nginx_mon-0.4.0/ \
-  -o ~/rpmbuild/SOURCES/nginx_mon-0.4.0.tar.gz HEAD
+git archive --format=tar.gz --prefix=nginx_mon-0.5.0/ \
+  -o ~/rpmbuild/SOURCES/nginx_mon-0.5.0.tar.gz HEAD
 rpmbuild -bb packaging/nginx_mon.spec
 ```
 
 The resulting artifact is under
-`~/rpmbuild/RPMS/x86_64/nginx_mon-0.4.0-1.el9.x86_64.rpm`.
+`~/rpmbuild/RPMS/x86_64/nginx_mon-0.5.0-1.el9.x86_64.rpm`.
 
 Verify and install it:
 
 ```bash
-rpm -qpl ~/rpmbuild/RPMS/x86_64/nginx_mon-0.4.0-1.el9.x86_64.rpm
-rpm -qpR ~/rpmbuild/RPMS/x86_64/nginx_mon-0.4.0-1.el9.x86_64.rpm
-sudo dnf install -y ~/rpmbuild/RPMS/x86_64/nginx_mon-0.4.0-1.el9.x86_64.rpm
+rpm -qpl ~/rpmbuild/RPMS/x86_64/nginx_mon-0.5.0-1.el9.x86_64.rpm
+rpm -qpR ~/rpmbuild/RPMS/x86_64/nginx_mon-0.5.0-1.el9.x86_64.rpm
+sudo dnf install -y ~/rpmbuild/RPMS/x86_64/nginx_mon-0.5.0-1.el9.x86_64.rpm
 /usr/bin/nginx-mon --help
 ```
 

@@ -63,7 +63,9 @@ def discover_log_file(
     if len(masters) > 1:
         raise NginxDiscoveryError(
             "Multiple Nginx master processes found ({}); use --nginx-pid or --log-file".format(
-                ", ".join(str(master.pid) for master in masters)
+                ", ".join(
+                    "{} ({})".format(master.pid, master.executable) for master in masters
+                )
             )
         )
 
