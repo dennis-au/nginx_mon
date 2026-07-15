@@ -82,7 +82,7 @@
 
 ## 7. Source-Built Nginx Log Discovery
 
-- [x] Keep `--log-file` as the explicit-path override; add opt-in `--detect-nginx` and optional `--nginx-pid` selection.
+- [x] Keep `--log-file` as the explicit-path override; autodetect by default, retaining `--detect-nginx` and optional `--nginx-pid` selection.
 - [x] Discover Nginx master processes from `/proc/<pid>/comm` and `/proc/<pid>/cmdline`, and report the executable via `/proc/<pid>/exe` without executing it.
 - [x] Inspect the selected master and direct-child file descriptors under `/proc/<pid>/fd`; retain only regular, non-deleted files and deduplicate by device/inode.
 - [x] Sample only the recent complete lines of each candidate and select it only when `NginxJsonParser` accepts the monitor JSON schema.

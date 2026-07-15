@@ -1,4 +1,4 @@
-.TH NGINX-MON 1 "July 2026" "nginx-mon 0.5.0" "User Commands"
+.TH NGINX-MON 1 "July 2026" "nginx-mon 0.6.0" "User Commands"
 .SH NAME
 nginx-mon \- real-time Nginx reverse-proxy traffic monitor
 .SH SYNOPSIS
@@ -10,16 +10,18 @@ nginx-mon \- real-time Nginx reverse-proxy traffic monitor
 .B nginx-mon
 tails an Nginx JSON access log and displays upstream traffic grouped by
 frontend virtual host. It retains a bounded in-memory request history and does
-not modify Nginx logs.
+not modify Nginx logs. By default it locates one active nginx-mon JSON log
+through the running Nginx process descriptors under
+.IR /proc .
 .SH OPTIONS
 .TP
 .B --log-file PATH
-JSON access log to follow. Unless discovery is requested, the default is
-.IR /var/log/nginx/nginx-mon-access.json.log .
+Explicit nginx-mon JSON access log to follow. This bypasses autodetection.
 .TP
 .B --detect-nginx
-Locate one running Nginx master and follow its only open, nonempty access log
-that matches nginx-mon's JSON log format. This Linux-only convenience reads
+Explicitly request automatic discovery, which is already the default. It
+locates one running Nginx master and follows its only open, nonempty access log
+that matches nginx-mon's JSON log format. This Linux-only behavior reads
 .IR /proc ;
 it does not execute Nginx or parse its configuration. If discovery is
 ambiguous or no matching log has traffic yet, use
@@ -94,6 +96,9 @@ sample test server and its RPM paths are not required. The account running
 .B nginx-mon
 must be able to read the access log and the selected process descriptors under
 .IR /proc .
+An ordinary combined-format access log cannot supply nginx-mon's upstream,
+listener, and TLS fields; configure the supplied JSON log format and generate
+at least one request before automatic discovery.
 .SH FILES
 .TP
 .I /usr/share/nginx-mon/nginx_mon.conf

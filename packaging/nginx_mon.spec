@@ -1,5 +1,5 @@
 Name:           nginx_mon
-Version:        0.5.0
+Version:        0.6.0
 Release:        1%{?dist}
 Summary:        Real-time Nginx reverse-proxy traffic monitor
 
@@ -48,6 +48,10 @@ gzip -9c packaging/nginx-mon.1 > %{buildroot}%{_mandir}/man1/nginx-mon.1.gz
 %{_mandir}/man1/nginx-mon.1.gz
 
 %changelog
+* Wed Jul 15 2026 Dennis Au <dennis.518@gmail.com> - 0.6.0-1
+- Autodetect the active nginx-mon JSON log by default
+- Report open regular-file candidates when autodetection finds no monitor log
+
 * Wed Jul 15 2026 Dennis Au <dennis.518@gmail.com> - 0.5.0-1
 - Discover active nginx-mon JSON logs from running Nginx processes
 - Preserve unread log entries across rename and reopen rotation

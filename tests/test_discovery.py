@@ -99,7 +99,7 @@ def test_ignores_deleted_non_regular_and_invalid_log_candidates(tmp_path):
     (master / "fd" / "9").symlink_to(invalid_log)
     (master / "fd" / "10").symlink_to(tmp_path / "gone.json")
 
-    with pytest.raises(NginxDiscoveryError, match="No nginx-mon JSON access log"):
+    with pytest.raises(NginxDiscoveryError, match="No active nginx-mon JSON access log"):
         discover_log_file(proc_root=proc_root)
 
 
@@ -115,8 +115,27 @@ def test_rejects_an_empty_json_log(tmp_path):
     log_file.touch()
     (master / "fd" / "7").symlink_to(log_file)
 
-    with pytest.raises(NginxDiscoveryError, match="No nginx-mon JSON access log"):
+    with pytest.raises(NginxDiscoveryError, match="No active nginx-mon JSON access log"):
         discover_log_file(proc_root=proc_root)
+
+
+def test_reports_open_log_candidates_when_none_matches_the_monitor_schema(tmp_path):
+    proc_root = tmp_path / "proc"
+    master = _process(
+        proc_root,
+        100,
+        "nginx: master p",
+        b"nginx: master process /custom/nginx/sbin/nginx\0",
+    )
+    access_log = tmp_path / "logs" / "access.log"
+    access_log.parent.mkdir()
+    access_log.write_text('127.0.0.1 - - [15/Jul/2026:10:58:40 +0800] "GET / HTTP/1.1" 200 42\n')
+    (master / "fd" / "7").symlink_to(access_log)
+
+    with pytest.raises(NginxDiscoveryError, match="No active nginx-mon JSON access log") as error:
+        discover_log_file(proc_root=proc_root)
+
+    assert str(access_log) in str(error.value)
 
 
 def test_requires_a_master_when_multiple_nginx_instances_are_running(tmp_path):

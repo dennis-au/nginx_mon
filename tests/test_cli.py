@@ -3,7 +3,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 
-from nginx_mon.cli import DEFAULT_LOG_FILE, build_parser, main
+from nginx_mon.cli import build_parser, main
 from nginx_mon.discovery import NginxDiscoveryError
 
 
@@ -41,13 +41,17 @@ def test_main_constructs_and_runs_the_monitor():
     app.run.assert_called_once_with()
 
 
-def test_main_uses_the_default_log_file_without_discovery():
+def test_main_auto_detects_a_log_file_without_command_line_options():
     app = Mock()
-    with patch("nginx_mon.cli.MonitorApp", return_value=app) as app_class:
+    detected_log = Path("/custom/nginx/logs/nginx-mon.json")
+    with patch("nginx_mon.cli.MonitorApp", return_value=app) as app_class, patch(
+        "nginx_mon.cli.discover_log_file", return_value=detected_log
+    ) as discover:
         assert main([]) == 0
 
+    discover.assert_called_once_with(nginx_pid=None)
     app_class.assert_called_once_with(
-        log_file=DEFAULT_LOG_FILE,
+        log_file=detected_log,
         refresh_interval=1.0,
         max_records=5_000,
     )
@@ -95,11 +99,11 @@ def test_nginx_pid_selects_the_matching_master_for_discovery():
     discover.assert_called_once_with(nginx_pid=123)
 
 
-def test_main_reports_discovery_failures_as_argument_errors():
-    with patch(
-        "nginx_mon.cli.discover_log_file",
-        side_effect=NginxDiscoveryError("multiple logs"),
+@pytest.mark.parametrize("arguments", [[], ["--detect-nginx"]])
+def test_main_reports_auto_discovery_failures_as_argument_errors(arguments):
+    with patch("nginx_mon.cli.MonitorApp"), patch(
+        "nginx_mon.cli.discover_log_file", side_effect=NginxDiscoveryError("multiple logs")
     ), pytest.raises(SystemExit) as error:
-        main(["--detect-nginx"])
+        main(arguments)
 
     assert error.value.code == 2

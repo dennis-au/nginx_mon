@@ -48,7 +48,7 @@ name. A missing local address or unavailable host tools is displayed as `-`.
 Install the produced RPM on CentOS Stream 9 / RHEL 9 compatible x86_64 hosts:
 
 ```bash
-sudo dnf install ./nginx_mon-0.5.0-1.el9.x86_64.rpm
+sudo dnf install ./nginx_mon-0.6.0-1.el9.x86_64.rpm
 ```
 
 The installed files are:
@@ -85,7 +85,7 @@ through `$ssl_protocol`.
 ```bash
 nginx-mon
 nginx-mon --log-file /var/log/nginx/nginx-mon-access.json.log
-nginx-mon --detect-nginx
+nginx-mon --detect-nginx  # explicit form of the default autodetection
 nginx-mon --nginx-pid 1234
 nginx-mon --refresh-interval 0.5 --max-records 10000
 ```
@@ -104,11 +104,11 @@ For a source-built Nginx, add the supplied JSON `log_format` to its existing
 server. Do not copy the sample's test `server` block into an existing vhost.
 Choose a writable, readable local log path under the installation's own prefix.
 
-When exactly one running Nginx instance has one open, nonempty log that matches
-the monitor JSON contract, start it with:
+By default, nginx-mon locates the running Nginx process and its one open,
+nonempty log that matches the monitor JSON contract. Start it with:
 
 ```bash
-nginx-mon --detect-nginx
+nginx-mon
 ```
 
 Discovery reads the running master and worker descriptors under `/proc`; it
@@ -116,6 +116,9 @@ does not execute Nginx or parse configuration includes. If multiple master
 processes run, select one with `--nginx-pid PID`. If the log is empty, multiple
 matching logs are open, `/proc` is restricted, or Nginx writes to syslog,
 journald, stdout, or a pipe, pass the path explicitly with `--log-file`.
+An ordinary combined-format `access.log` is not sufficient: configure the
+nginx-mon JSON `log_format` and matching `access_log`, then send a request
+before starting the monitor.
 
 The account running `nginx-mon` must be able to read both `/proc/<pid>/fd` and
 the log file. The supplied `$ssl_protocol` field requires Nginx's HTTP SSL
@@ -160,20 +163,20 @@ Run this on CentOS Stream 9 after committing the source files:
 
 ```bash
 mkdir -p ~/rpmbuild/SOURCES
-git archive --format=tar.gz --prefix=nginx_mon-0.5.0/ \
-  -o ~/rpmbuild/SOURCES/nginx_mon-0.5.0.tar.gz HEAD
+git archive --format=tar.gz --prefix=nginx_mon-0.6.0/ \
+  -o ~/rpmbuild/SOURCES/nginx_mon-0.6.0.tar.gz HEAD
 rpmbuild -bb packaging/nginx_mon.spec
 ```
 
 The resulting artifact is under
-`~/rpmbuild/RPMS/x86_64/nginx_mon-0.5.0-1.el9.x86_64.rpm`.
+`~/rpmbuild/RPMS/x86_64/nginx_mon-0.6.0-1.el9.x86_64.rpm`.
 
 Verify and install it:
 
 ```bash
-rpm -qpl ~/rpmbuild/RPMS/x86_64/nginx_mon-0.5.0-1.el9.x86_64.rpm
-rpm -qpR ~/rpmbuild/RPMS/x86_64/nginx_mon-0.5.0-1.el9.x86_64.rpm
-sudo dnf install -y ~/rpmbuild/RPMS/x86_64/nginx_mon-0.5.0-1.el9.x86_64.rpm
+rpm -qpl ~/rpmbuild/RPMS/x86_64/nginx_mon-0.6.0-1.el9.x86_64.rpm
+rpm -qpR ~/rpmbuild/RPMS/x86_64/nginx_mon-0.6.0-1.el9.x86_64.rpm
+sudo dnf install -y ~/rpmbuild/RPMS/x86_64/nginx_mon-0.6.0-1.el9.x86_64.rpm
 /usr/bin/nginx-mon --help
 ```
 

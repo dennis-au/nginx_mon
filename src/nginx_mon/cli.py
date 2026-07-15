@@ -8,7 +8,6 @@ from . import __version__
 from .app import MonitorApp
 from .discovery import NginxDiscoveryError, discover_log_file
 
-DEFAULT_LOG_FILE = Path("/var/log/nginx/nginx-mon-access.json.log")
 DEFAULT_REFRESH_INTERVAL = 1.0
 DEFAULT_MAX_RECORDS = 5_000
 
@@ -42,14 +41,12 @@ def build_parser() -> argparse.ArgumentParser:
         type=Path,
         default=None,
         metavar="PATH",
-        help="Nginx JSON access log to follow (default: {} when not detecting)".format(
-            DEFAULT_LOG_FILE
-        ),
+        help="explicit nginx-mon JSON access log to follow",
     )
     parser.add_argument(
         "--detect-nginx",
         action="store_true",
-        help="locate one active nginx-mon JSON access log through /proc",
+        help="explicitly request autodetection (the default behavior)",
     )
     parser.add_argument(
         "--nginx-pid",
@@ -80,13 +77,11 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     args = parser.parse_args(argv)
     if args.log_file is not None:
         log_file = args.log_file
-    elif args.detect_nginx or args.nginx_pid is not None:
+    else:
         try:
             log_file = discover_log_file(nginx_pid=args.nginx_pid)
         except NginxDiscoveryError as error:
             parser.error(str(error))
-    else:
-        log_file = DEFAULT_LOG_FILE
     app = MonitorApp(
         log_file=log_file,
         refresh_interval=args.refresh_interval,

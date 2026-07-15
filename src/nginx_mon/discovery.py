@@ -74,10 +74,15 @@ def discover_log_file(
     parser = NginxJsonParser()
     matches = [path for path in candidates if _contains_monitor_record(path, parser)]
     if not matches:
-        raise NginxDiscoveryError(
-            "No nginx-mon JSON access log found for Nginx PID {}; use --log-file".format(
-                master.pid
+        candidate_suffix = ""
+        if candidates:
+            candidate_suffix = " Open regular files: {}.".format(
+                ", ".join(str(path) for path in candidates[:5])
             )
+        raise NginxDiscoveryError(
+            "No active nginx-mon JSON access log found for Nginx PID {}; "
+            "configure an nginx_mon_json access_log and send a request, or use --log-file "
+            "to select an existing nginx-mon JSON log.{}".format(master.pid, candidate_suffix)
         )
     if len(matches) > 1:
         raise NginxDiscoveryError(

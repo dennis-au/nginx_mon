@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.6.0] - 2026-07-15
+
+### Changed
+
+- Default startup now autodetects the active nginx-mon JSON log from running
+  Nginx processes instead of waiting for the RPM-specific log path.
+- Failed autodetection now lists open regular-file candidates to identify an
+  incompatible standard access log.
+
 ## [0.5.0] - 2026-07-15
 
 ### Added
