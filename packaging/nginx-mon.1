@@ -8,6 +8,7 @@ nginx-mon \- real-time Nginx reverse-proxy traffic monitor
 .RI [ --nginx-pid " PID" ]
 .RI [ --enable-global-json-log ]
 .RI [ --disable-global-json-log ]
+.RI [ --toggle-global-json-log ]
 .RI [ --global-log-path " PATH" ]
 .RI [ --refresh-interval " SECONDS" ]
 .RI [ --max-records " COUNT" ]
@@ -55,9 +56,16 @@ Remove only the marked include and fragment created by
 .BR --enable-global-json-log ,
 then validate and reload the selected Nginx master.
 .TP
+.B --toggle-global-json-log
+Enable the nginx-mon managed global log when it is absent, or disable it when
+it is present. The operation recognizes only nginx-mon's marked include and
+fragment. Use explicit enable or disable commands in automation where the
+desired target state must be fixed.
+.TP
 .B --global-log-path PATH
 JSON log path used by
-.BR --enable-global-json-log .
+.B --enable-global-json-log
+or when the toggle enables the log.
 The default is
 .IR /var/log/nginx/nginx-mon-access.json.log .
 The parent directory must exist and be writable by the Nginx master.

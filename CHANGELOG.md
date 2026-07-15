@@ -6,6 +6,8 @@
 
 - `--enable-global-json-log` and `--disable-global-json-log` safely manage an
   additional global JSON access-log mirror for the running Nginx instance.
+- `--toggle-global-json-log` provides a single command that turns the managed
+  global JSON mirror on or off.
 - `--global-log-path` selects the mirror location for source-built and
   nonstandard Nginx installations.
 

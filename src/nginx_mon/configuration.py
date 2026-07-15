@@ -136,6 +136,43 @@ def disable_global_json_log(
     return GlobalLogResult(pid=pid, config_file=config_file, log_file=log_file)
 
 
+def toggle_global_json_log(
+    nginx_pid: Optional[int] = None,
+    log_file: Path = DEFAULT_GLOBAL_LOG_FILE,
+    proc_root: Path = PROC_ROOT,
+    runner: Runner = subprocess.run,
+    signal_sender: SignalSender = os.kill,
+) -> Tuple[bool, GlobalLogResult]:
+    """Enable the managed global log when absent, otherwise disable it.
+
+    The boolean result is ``True`` when the log was enabled and ``False`` when
+    it was disabled.
+    """
+
+    if _managed_global_log_is_enabled(nginx_pid, proc_root, runner):
+        return False, disable_global_json_log(nginx_pid, proc_root, runner, signal_sender)
+    return True, enable_global_json_log(nginx_pid, log_file, proc_root, runner, signal_sender)
+
+
+def _managed_global_log_is_enabled(
+    nginx_pid: Optional[int], proc_root: Path, runner: Runner
+) -> bool:
+    _pid, executable = _select_running_master(nginx_pid, proc_root)
+    config_file = _configuration_path(executable, runner)
+    fragment_file = config_file.with_name(MANAGED_FRAGMENT_NAME)
+    config = _read_text(config_file)
+    managed_block = "{}\n{}".format(MANAGED_INCLUDE_COMMENT, _managed_include(fragment_file))
+    if "{}\n".format(_indented(managed_block)) not in config:
+        return False
+    fragment = _read_optional_text(fragment_file)
+    if fragment is None or not fragment.startswith(MANAGED_FRAGMENT_COMMENT):
+        raise NginxConfigurationError(
+            "Managed include {} exists but its fragment is missing or was changed; "
+            "remove it manually before retrying".format(fragment_file)
+        )
+    return True
+
+
 def _select_running_master(nginx_pid: Optional[int], proc_root: Path) -> Tuple[int, str]:
     masters = find_nginx_masters(proc_root)
     if nginx_pid is not None:

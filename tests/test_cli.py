@@ -26,6 +26,12 @@ def test_cli_accepts_explicit_global_json_log_management_options():
     assert args.global_log_path == Path("/logs/nginx-mon.json")
 
 
+def test_cli_accepts_one_switch_for_global_json_log_management():
+    args = build_parser().parse_args(["--toggle-global-json-log"])
+
+    assert args.toggle_global_json_log is True
+
+
 def test_cli_rejects_a_global_log_path_without_an_enable_operation():
     with pytest.raises(SystemExit):
         main(["--global-log-path", "/logs/nginx-mon.json"])
@@ -90,6 +96,25 @@ def test_main_disables_the_global_json_log_without_starting_the_monitor(capsys):
     disable.assert_called_once_with(nginx_pid=None)
     app_class.assert_not_called()
     assert "Disabled global JSON log" in capsys.readouterr().out
+
+
+def test_main_toggles_the_global_json_log_without_starting_the_monitor(capsys):
+    result = GlobalLogResult(
+        pid=123,
+        config_file=Path("/etc/nginx/nginx.conf"),
+        log_file=Path("/var/log/nginx/nginx-mon-access.json.log"),
+    )
+    with patch("nginx_mon.cli.toggle_global_json_log", return_value=(True, result)) as toggle, patch(
+        "nginx_mon.cli.MonitorApp"
+    ) as app_class:
+        assert main(["--toggle-global-json-log", "--nginx-pid", "123"]) == 0
+
+    toggle.assert_called_once_with(
+        nginx_pid=123,
+        log_file=Path("/var/log/nginx/nginx-mon-access.json.log"),
+    )
+    app_class.assert_not_called()
+    assert "Enabled global JSON log" in capsys.readouterr().out
 
 
 def test_main_auto_detects_a_log_file_without_command_line_options():

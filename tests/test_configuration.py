@@ -8,6 +8,7 @@ from nginx_mon.configuration import (
     _select_running_master,
     disable_global_json_log,
     enable_global_json_log,
+    toggle_global_json_log,
 )
 
 
@@ -136,6 +137,31 @@ def test_disable_removes_only_the_managed_global_mirror(tmp_path, monkeypatch):
         "http {\n    access_log /var/log/nginx/access.log main;\n}\n"
     )
     assert not (tmp_path / "nginx-mon-global.conf").exists()
+
+
+def test_toggle_enables_then_disables_the_managed_global_json_log(tmp_path, monkeypatch):
+    config_file = tmp_path / "nginx.conf"
+    config_file.write_text("http {}\n", encoding="utf-8")
+    monkeypatch.setattr(
+        "nginx_mon.configuration._select_running_master",
+        lambda nginx_pid, proc_root: (321, "/custom/sbin/nginx"),
+    )
+    runner = _runner_for(config_file, [])
+
+    enabled, _ = toggle_global_json_log(
+        log_file=tmp_path / "monitor.json",
+        runner=runner,
+        signal_sender=lambda _pid, _signal: None,
+    )
+    disabled, _ = toggle_global_json_log(
+        log_file=tmp_path / "monitor.json",
+        runner=runner,
+        signal_sender=lambda _pid, _signal: None,
+    )
+
+    assert enabled is True
+    assert disabled is False
+    assert config_file.read_text(encoding="utf-8") == "http {}\n"
 
 
 def test_enable_restores_the_original_configuration_when_nginx_validation_fails(

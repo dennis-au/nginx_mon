@@ -102,6 +102,16 @@ default logging configuration:
 sudo nginx-mon --disable-global-json-log
 ```
 
+For an interactive one-control workflow, use the toggle command. It enables
+the managed JSON mirror when absent and disables it when present:
+
+```bash
+sudo nginx-mon --toggle-global-json-log
+```
+
+Pass `--global-log-path PATH` with the toggle when turning it on for a
+nonstandard Nginx log directory.
+
 This is a global **default**. A `server` or `location` with its own
 `access_log` directive does not inherit it; add the supplied JSON `access_log`
 to that scope when you need to monitor that traffic.
@@ -133,6 +143,7 @@ nginx-mon --detect-nginx  # explicit form of the default autodetection
 nginx-mon --nginx-pid 1234
 sudo nginx-mon --enable-global-json-log
 sudo nginx-mon --disable-global-json-log
+sudo nginx-mon --toggle-global-json-log
 nginx-mon --refresh-interval 0.5 --max-records 10000
 ```
 
