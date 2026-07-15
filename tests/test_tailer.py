@@ -57,3 +57,23 @@ def test_follower_drains_writes_to_the_rotated_inode_before_switching(tmp_path):
     log_file.write_text("new file\n", encoding="utf-8")
 
     assert follower.poll() == ["late old file\n", "new file\n"]
+
+
+def test_follower_reads_the_log_after_nginx_reopens_an_empty_replacement(tmp_path):
+    log_file = tmp_path / "access.json.log"
+    log_file.write_text("before rotation\n", encoding="utf-8")
+    follower = LogFollower(log_file)
+    assert follower.poll() == ["before rotation\n"]
+
+    rotated_file = tmp_path / "access.json.log.1"
+    log_file.rename(rotated_file)
+    log_file.touch()
+    with rotated_file.open("a", encoding="utf-8") as handle:
+        handle.write("written before reopen\n")
+
+    assert follower.poll() == ["written before reopen\n"]
+
+    with log_file.open("a", encoding="utf-8") as handle:
+        handle.write("written after reopen\n")
+
+    assert follower.poll() == ["written after reopen\n"]
